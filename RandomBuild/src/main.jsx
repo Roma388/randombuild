@@ -31,6 +31,22 @@ const imageFiles = import.meta.glob(
   }
 );
 
+// PNG-интерфейсные изображения собираются Vite как статические ресурсы.
+// Это важно для production: условный new URL(path, import.meta.url)
+// не преобразуется сборщиком и даёт битые ссылки после публикации.
+const uiPngFiles = import.meta.glob(
+  "../Images/ui/*.png",
+  {
+    eager: true,
+    query: "?url",
+    import: "default",
+  }
+);
+
+function getUiPng(fileName) {
+  return uiPngFiles[`../Images/ui/${fileName}`] || "";
+}
+
 function getItemImage(name, folder) {
   /*
    * Сначала ищем изображение по исходному имени.
@@ -1528,14 +1544,14 @@ function getItemPrice(item, group) {
     return 0;
   }
 
-  const price = normalizedItemPrices[group]?.[normalizePriceName(item.name)];
+  const price = normalizedItemPrices[group]?.[normalizePriceName(itemName(item))];
 
   if (Number.isFinite(price)) {
     return price;
   }
 
   console.warn(
-    `[RANDOMBUILD] Не найдена цена для "${item.name}" в группе "${group}".`
+    `[RANDOMBUILD] Не найдена цена для "${itemName(item)}" в группе "${group}".`
   );
 
   return 0;
@@ -2406,12 +2422,9 @@ await sleep(
 
 <img
   className="rank-panel-artwork"
-  src={new URL(
-    language === "en"
-      ? "../Images/ui/rank-panel-en.png"
-      : "../Images/ui/rank-panel.png",
-    import.meta.url
-  ).href}
+  src={getUiPng(
+    language === "en" ? "rank-panel-en.png" : "rank-panel.png"
+  )}
   alt=""
   aria-hidden="true"
 />
@@ -2569,16 +2582,15 @@ await sleep(
 
   <img
     className="generate-button-image"
-    src={new URL(
+    src={getUiPng(
       generating
         ? (language === "ru"
-            ? "../Images/ui/hunt-generating-button.png"
-            : "../Images/ui/hunt-generating-button-en.png")
+            ? "hunt-generating-button.png"
+            : "hunt-generating-button-en.png")
         : (language === "ru"
-            ? "../Images/ui/hunt-generate-button-ru.png"
-            : "../Images/ui/hunt-generate-button-en.png"),
-      import.meta.url
-    ).href}
+            ? "hunt-generate-button-ru.png"
+            : "hunt-generate-button-en.png")
+    )}
     alt=""
     aria-hidden="true"
   />
@@ -2609,12 +2621,11 @@ await sleep(
       >
         <img
           className="contract-mode-switch-art"
-          src={new URL(
+          src={getUiPng(
             contractModeOn
-              ? "../Images/ui/contract-mode-switch-on.png"
-              : "../Images/ui/contract-mode-switch-off.png",
-            import.meta.url
-          ).href}
+              ? "contract-mode-switch-on.png"
+              : "contract-mode-switch-off.png"
+          )}
           alt=""
           aria-hidden="true"
         />
@@ -2686,27 +2697,6 @@ await sleep(
 
         <div
           className="contract-side-board"
-          title={[
-            `OCR: ${huntReaderDiagnostics?.status || "не запущен"}`,
-            `Ошибка OCR: ${huntReaderDiagnostics?.error || "нет"}`,
-            `Экран: ${huntReaderDiagnostics?.screenMode || "не определён"}`,
-            `Опорных подписей экипировки: ${huntReaderDiagnostics?.loadoutAnchorCount ?? 0}`,
-            `Окно Hunt найдено: ${huntReaderDiagnostics?.targetFound ? "да" : "нет"}`,
-            `Мониторов: ${huntReaderDiagnostics?.monitorCount ?? 0}`,
-            `Область захвата: ${huntReaderDiagnostics?.scanArea || "—"}`,
-            `Разрешение окна: ${huntReaderDiagnostics?.screenWidth ?? 0}×${huntReaderDiagnostics?.screenHeight ?? 0}`,
-            `Распознано слотов: ${huntReaderDiagnostics?.matchedSlotCount ?? 0}/${huntReaderDiagnostics?.expectedLoadoutCount ?? 0}`,
-            `Ввод обработан: ${huntReaderDiagnostics?.inputEventsProcessed ?? 0}`,
-            `Активный слот: ${huntReaderDiagnostics?.activeEquipmentSlot || "—"}`,
-            `Ввод: ${huntReaderDiagnostics?.lastInputEvent?.action || "ожидание"}`,
-            `Последний предмет: ${huntReaderDiagnostics?.lastInputEvent?.item || "—"}`,
-            `Баланс: ${huntReaderDiagnostics?.balance ?? "не распознан"}`,
-            `Game.log: ${huntLogDiagnostics?.gameLog || "не найден"}`,
-            `LogBackups: ${huntLogDiagnostics?.latestBackupLogs?.[0]?.name || "не найден"}`,
-            `Ошибка LogBackups: ${huntLogDiagnostics?.backupError || "нет"}`,
-            `Последнее событие: ${huntLogEvents.length ? `${huntLogEvents[huntLogEvents.length - 1].sourceKind || "лог"}/${huntLogEvents[huntLogEvents.length - 1].type}` : "—"}`,
-            `Событий логов получено: ${huntLogEvents.length}`,
-          ].join(" | ")}
           data-last-log-event={huntLogEvents.length ? huntLogEvents[huntLogEvents.length - 1].type : "none"}
           role="group"
           aria-label={
@@ -2832,6 +2822,27 @@ await sleep(
             </div>
           </div>
         </div>
+
+          <button
+            type="button"
+            className="contract-reset-button"
+            onClick={() => {
+              const confirmed = window.confirm(
+                language === "ru"
+                  ? "Обнулить все показатели контракта: убийства, использованные деньги и заработок? Текущий уровень сложности останется без изменений."
+                  : "Reset all contract counters: kills, money spent, and money earned? The current difficulty level will remain unchanged."
+              );
+
+              if (confirmed) {
+                resetContractProgress();
+              }
+            }}
+            disabled={generating}
+            aria-label={language === "ru" ? "Обнулить все показатели" : "Reset all counters"}
+          >
+            <span className="contract-reset-icon" aria-hidden="true">↺</span>
+            <span>{language === "ru" ? "СБРОС" : "RESET"}</span>
+          </button>
       </div>
 
       <section className="roulette">
