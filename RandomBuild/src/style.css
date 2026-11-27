@@ -1346,23 +1346,29 @@ z-index: 3;
   z-index: 100001;
 
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
 
   overflow: auto;
-  padding: 18px;
+  padding: 70px 24px 40px;
 
   background: rgba(0, 0, 0, 0.97);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
 }
 
+/*
+ * Руководство намеренно выводится крупнее окна браузера.
+ * Благодаря overflow:auto вся страница руководства
+ * прокручивается, поэтому текст остаётся читаемым.
+ */
 .guide-image {
   display: block;
-  width: auto;
+  flex: 0 0 auto;
+  width: 1500px;
+  max-width: none;
   height: auto;
-  max-width: 96vw;
-  max-height: 96vh;
+  max-height: none;
   object-fit: contain;
   box-shadow: 0 16px 70px rgba(0, 0, 0, 0.9);
 }
@@ -1402,12 +1408,14 @@ z-index: 3;
 @media (max-width: 620px) {
 
   .guide-overlay {
-    padding: 54px 8px 12px;
+    align-items: flex-start;
+    padding: 54px 8px 24px;
   }
 
   .guide-image {
-    max-width: 98vw;
-    max-height: 92vh;
+    width: 1200px;
+    max-width: none;
+    max-height: none;
   }
 
   .guide-close-button {
