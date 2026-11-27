@@ -1,0 +1,5288 @@
+@import url('https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&family=Roboto+Condensed:wght@400;500;600;700&display=swap');
+
+:root {
+  --hunt-ink: #090906;
+  --hunt-panel: #15130f;
+  --hunt-panel-light: #211d17;
+  --hunt-line: rgba(151, 127, 86, 0.48);
+  --hunt-brass: #a98a58;
+  --hunt-brass-light: #e1c48b;
+  --hunt-bone: #e8dcc2;
+  --hunt-muted: #aa9a7a;
+
+  /* Автоматическая геометрия 14 колонок */
+  --roulette-gap: clamp(3px, 0.4vw, 8px);
+  --roulette-gaps-total: clamp(39px, 5.2vw, 104px);
+
+  --roulette-card-width:
+  clamp(
+    64px,
+    calc((100vw - 64px - var(--roulette-gaps-total)) / 14),
+    200px
+  );
+
+  /* Слоты квадратные: высота равна адаптивной ширине. */
+  --roulette-card-height: var(--roulette-card-width);
+  --roulette-card-half-height: calc(var(--roulette-card-width) / 2);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+html {
+  background: var(--hunt-ink);
+}
+
+body {
+  position: relative;
+  min-height: 100vh;
+  color: var(--hunt-bone);
+  font-family: "PT Serif", Georgia, serif;
+  background-color: var(--hunt-ink);
+  background-image:
+    linear-gradient(
+      90deg,
+      rgba(5, 6, 4, 0.30) 0%,
+      rgba(7, 7, 5, 0.08) 48%,
+      rgba(5, 6, 4, 0.30) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(5, 6, 4, 0.06) 0%,
+      rgba(5, 6, 4, 0.08) 58%,
+      rgba(5, 6, 4, 0.36) 100%
+    ),
+    url("../Images/backgrounds/hunt-bayou-bg.png");
+  background-position: center, center, center 42%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+/* Мягкая виньетка, как в игровом меню. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse at 50% 42%,
+      transparent 40%,
+      rgba(0, 0, 0, 0.12) 78%,
+      rgba(0, 0, 0, 0.34) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(10, 9, 6, 0.02),
+      rgba(10, 9, 6, 0.18)
+    );
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}
+
+button {
+  font-family: inherit;
+}
+
+.app {
+  min-height: 100vh;
+  padding: 0 0 28px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(8, 8, 6, 0.04),
+      rgba(8, 8, 6, 0.08) 48%,
+      rgba(8, 8, 6, 0.20)
+    );
+}
+
+/* Верхняя шапка взята из предоставленного референса.
+   Заголовок и графическая кнопка уже находятся в баннере. */
+.header {
+  position: relative;
+  display: block;
+
+  width: 100%;
+  height: clamp(118px, 8.4vw, 158px);
+
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  background-image: url("../Images/ui/hunt-header-banner.png");
+
+  /* Положение в верхнем левом углу */
+  background-position: left top;
+
+  /* Сохраняем исходные пропорции, ничего не обрезаем */
+  background-size: contain;
+  background-repeat: no-repeat;
+
+  background-color: transparent;
+
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.22);
+}
+
+/* Английская версия верхней шапки */
+.header-en {
+  background-image:
+    url("../Images/ui/hunt-header-banner-en.png");
+}
+
+/* Английская версия изображения сложности */
+.header-en .difficulty-level {
+  background-image:
+    url("../Images/ui/difficulty-level-en.png");
+}
+
+/* Скрываем только HTML-заголовок.
+   Шкала сложности должна оставаться видимой. */
+.header > div:not(.difficulty-control):not(.rank-control) {
+  display: none;
+}
+
+/* Это настоящий HTML button, наложенный точно на кнопку в баннере.
+   Текст оставлен для доступности, визуальная надпись находится в PNG. */
+.generate-button {
+  position: absolute;
+
+  left: 73.6%;
+  top: 29%;
+
+  /* Размер именно ВИДИМОЙ кнопки */
+  width: 20.4%;
+  height: auto;
+  aspect-ratio: 2048 / 370;
+
+  min-width: 0;
+  min-height: 0;
+
+  margin: 0;
+  padding: 0;
+
+  border: 0;
+  border-radius: 0;
+
+  color: transparent;
+  font-size: 0;
+  line-height: 0;
+
+  background-color: transparent;
+  background-image: url("../Images/ui/hunt-generate-button.png");
+  background-repeat: no-repeat;
+
+  /*
+   * У PNG прозрачные поля сверху и снизу.
+   * Увеличиваем изображение внутри кнопки,
+   * чтобы прозрачные поля вышли за пределы элемента.
+   */
+  background-size: 100% 184.3%;
+  background-position: center;
+
+  box-shadow: none;
+  outline: none;
+
+  cursor: pointer;
+  opacity: 1;
+
+  transition:
+    filter 0.16s ease,
+    transform 0.08s ease;
+}
+
+.generate-button:hover:not(:disabled) {
+  background-color: transparent;
+  background-image: url("../Images/ui/hunt-generate-button.png");
+  background-repeat: no-repeat;
+  background-size: 100% 184.3%;
+  background-position: center;
+
+  border: 0;
+  box-shadow: none;
+
+  filter: brightness(1.08);
+}
+
+.generate-button-en:hover:not(:disabled) {
+  background-image: url("../Images/ui/hunt-generate-button-en.png");
+}
+
+.generate-button:active:not(:disabled) {
+  transform: translateY(1px);
+
+  background-color: transparent;
+  background-image: url("../Images/ui/hunt-generate-button.png");
+  background-repeat: no-repeat;
+  background-size: 100% 184.3%;
+  background-position: center;
+
+  border: 0;
+  box-shadow: none;
+
+  filter: brightness(0.94);
+}
+
+.generate-button-en:active:not(:disabled) {
+  background-image: url("../Images/ui/hunt-generate-button-en.png");
+}
+
+.generate-button:disabled {
+  border: 0;
+  color: transparent;
+
+  background-color: transparent;
+  background-image: url("../Images/ui/hunt-generating-button.png");
+  background-repeat: no-repeat;
+  background-size: 100% 184.3%;
+  background-position: center;
+
+  box-shadow: none;
+  outline: none;
+
+  opacity: 0.60;
+  cursor: wait;
+}
+
+.generate-button:focus-visible {
+  outline: none;
+}
+
+/* Английская версия кнопки */
+.generate-button-en {
+  background-image: url("../Images/ui/hunt-generate-button-en.png");
+}
+
+/* Английская версия во время генерации */
+.generate-button-en:disabled {
+  background-image: url("../Images/ui/hunt-generating-button-en.png");
+}
+
+/* Горизонтальная сетка колонок. */
+.roulette {
+  width: max-content;
+  max-width: calc(100% - 48px);
+
+  margin: 4px auto 0;
+  padding: 2px 8px 22px;
+
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+
+  gap: var(--roulette-gap);
+
+  overflow-x: auto;
+
+  scrollbar-width: thin;
+  scrollbar-color:
+    rgba(151, 122, 75, 0.72)
+    rgba(8, 8, 6, 0.62);
+}
+
+.roulette::-webkit-scrollbar {
+  height: 8px;
+}
+
+.roulette::-webkit-scrollbar-track {
+  background: rgba(8, 8, 6, 0.62);
+}
+
+.roulette::-webkit-scrollbar-thumb {
+  border: 2px solid rgba(8, 8, 6, 0.72);
+  background: rgba(151, 122, 75, 0.72);
+}
+
+.roulette-row {
+  flex: 0 0 var(--roulette-card-width);
+  width: var(--roulette-card-width);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Карточки с названиями слотов над рулетками. */
+.roulette-label {
+  position: relative;
+  width: var(--roulette-card-width);
+  height: clamp(30px, 2.75vw, 84px);
+  margin: 0 0 4px;
+  padding: 5px 4px 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  background:
+    url("../Images/ui/label-background.png")
+    center / 100% 100%
+    no-repeat;
+  box-shadow: none;
+
+  color: #d9c9a7;
+  font-family: "PT Serif", Georgia, serif;
+  font-size: clamp(6px, 0.47vw, 12px);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: 0.25px;
+  text-align: center;
+  text-transform: uppercase;
+  text-shadow: 0 1px 2px #000;
+}
+
+/* Окно из пяти вертикально расположенных карточек. */
+.roulette-window {
+  
+
+  position: relative;
+  width: var(--roulette-card-width);
+  height: calc(
+    var(--roulette-card-height) * 5 +
+    var(--roulette-gap) * 4
+  );
+  overflow: hidden;
+  border: 1px solid rgba(114, 99, 70, 0.50);
+  background: rgba(12, 12, 9, 0.92);
+  box-shadow:
+    0 7px 18px rgba(0, 0, 0, 0.48),
+    inset 0 0 20px rgba(0, 0, 0, 0.78);
+}
+
+/* Рамка с названием выпавшего предмета */
+.roulette-result-panel {
+  width: calc(var(--roulette-card-width) + 12px);
+  aspect-ratio: 1875 / 1050;
+  flex: 0 0 auto;
+  margin-top: 5px;
+  padding: 0 5%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    url("../Images/ui/roulette-result-panel.png")
+    center / 100% 100%
+    no-repeat;
+
+  color: #e4d0a8;
+  font-family: "PT Serif", Georgia, serif;
+  font-size: clamp(9px, 0.68vw, 17px);
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  text-shadow:
+    0 1px 2px #000,
+    0 0 5px rgba(0, 0, 0, 0.95);
+
+  overflow-wrap: anywhere;
+}
+
+.roulette-viewport {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  overflow: hidden;
+}
+
+.roulette-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  gap: var(--roulette-gap);
+
+  width: var(--roulette-card-width);
+  height: auto;
+
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+/* Карточки: тёмный потёртый металл, копоть и болотная патина. */
+.roulette-card {
+  position: relative;
+  isolation: isolate;
+  flex: 0 0 var(--roulette-card-height);
+  width: var(--roulette-card-width);
+  height: var(--roulette-card-height);
+  padding: clamp(3px, 0.29vw, 8px);
+
+  border: 1px solid rgba(112, 100, 76, 0.48);
+  background-color: #171610;
+
+background-image: url("../Images/ui/card-background.png");
+background-position: center;
+background-size: cover;
+background-repeat: no-repeat;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  opacity: 1;
+  box-shadow:
+    inset 0 1px 0 rgba(231, 212, 170, 0.06),
+    inset 0 -9px 16px rgba(0, 0, 0, 0.38),
+    0 2px 4px rgba(0, 0, 0, 0.38);
+}
+
+.roulette-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.58;
+  background:
+    radial-gradient(
+      ellipse at 0% 0%,
+      rgba(113, 123, 70, 0.19),
+      transparent 25%
+    ),
+    radial-gradient(
+      ellipse at 100% 100%,
+      rgba(132, 89, 52, 0.18),
+      transparent 28%
+    ),
+    repeating-linear-gradient(
+      28deg,
+      transparent 0 24px,
+      rgba(221, 203, 161, 0.018) 25px,
+      transparent 26px 43px
+    );
+  mix-blend-mode: screen;
+}
+
+.roulette-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.26),
+      transparent 13%,
+      transparent 87%,
+      rgba(0, 0, 0, 0.30)
+    ),
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.14),
+      transparent 24%,
+      transparent 78%,
+      rgba(0, 0, 0, 0.38)
+    );
+}
+
+.roulette-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.roulette-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.roulette-image img {
+  display: block;
+  width: 80%;
+height: 80%;
+max-width: 80%;
+max-height: 80%;
+  object-fit: contain;
+  object-position: center;
+  filter:
+    drop-shadow(0 3px 5px rgba(0, 0, 0, 0.76))
+    saturate(0.88)
+    sepia(0.05);
+}
+
+/* Центральная ячейка: отдельный прозрачный графический орнамент. */
+.roulette-center {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: var(--roulette-card-width);
+  height: var(--roulette-card-height);
+  transform: translateY(-50%);
+  border: 0;
+  background:
+    url("../Images/ui/hunt-selected-frame.png")
+    center / 100% 100% no-repeat;
+  filter:
+  drop-shadow(0 0 1px rgba(255, 225, 160, 0.95))
+  drop-shadow(0 0 3px rgba(255, 205, 110, 0.85))
+  drop-shadow(0 0 6px rgba(225, 170, 65, 0.65))
+  drop-shadow(0 0 10px rgba(190, 135, 45, 0.35))
+  drop-shadow(0 2px 3px rgba(0, 0, 0, 0.9));
+  pointer-events: none;
+  z-index: 5;
+}
+
+.roulette-center::before,
+.roulette-center::after {
+  content: none;
+}
+
+/* Затемнение крайних рядов сохраняет центральную карточку главным акцентом. */
+.roulette-window::before,
+.roulette-window::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: calc(50% - var(--roulette-card-half-height));
+  z-index: 4;
+  pointer-events: none;
+}
+
+.roulette-window::before {
+  top: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(8, 8, 6, 0.92) 0%,
+      rgba(8, 8, 6, 0.70) 34%,
+      rgba(8, 8, 6, 0.28) 74%,
+      transparent 100%
+    );
+}
+
+.roulette-window::after {
+  bottom: 0;
+  background:
+    linear-gradient(
+      0deg,
+      rgba(8, 8, 6, 0.93) 0%,
+      rgba(8, 8, 6, 0.72) 34%,
+      rgba(8, 8, 6, 0.28) 74%,
+      transparent 100%
+    );
+}
+
+@media (max-width: 900px) {
+  .header {
+    min-height: 110px;
+  }
+
+  .roulette {
+    width: calc(100% - 28px);
+  }
+}
+
+@media (max-width: 620px) {
+  .header {
+    min-height: 100px;
+    height: 100px;
+  }
+
+  .generate-button {
+    left: 72%;
+    top: 27%;
+    width: 22%;
+    height: 52%;
+  }
+
+  .roulette {
+    width: calc(100% - 20px);
+    margin-top: 2px;
+    gap: 7px;
+  }
+
+  .roulette-label {
+    font-size: 8px;
+  }
+}
+/* Убираем старое оформление заголовков колонок */
+.roulette-label {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Полностью удаляем декоративный ромбик */
+.roulette-label::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* На всякий случай убираем дополнительные эффекты */
+.roulette-label::before {
+  content: none !important;
+  display: none !important;
+}
+/* Два наложенных пистолета */
+.roulette-dual-pistols {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Общие параметры изображений */
+.roulette-dual-pistol {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+
+  width: 94%;
+  height: 94%;
+
+  max-width: none;
+  max-height: none;
+
+  object-fit: contain;
+}
+
+/* Задний пистолет */
+.roulette-dual-pistol.back {
+  transform: translate(-58%, -57%);
+  z-index: 1;
+}
+
+/* Передний пистолет */
+.roulette-dual-pistol.front {
+  transform: translate(-42%, -43%);
+  z-index: 2;
+}
+/* Принудительно задаём размеры двух пистолетов */
+.roulette-image .roulette-dual-pistols .roulette-dual-pistol {
+  position: absolute;
+
+  width: 74.2%;
+height: 74.2%;
+
+  max-width: none;
+  max-height: none;
+
+  object-fit: contain;
+}
+/* Плавное появление названия предмета */
+.roulette-result-panel span {
+  animation: roulette-text-fade 2s linear forwards;
+}
+
+@keyframes roulette-text-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+/* Переключатель языка */
+.language-toggle {
+  position: absolute;
+  left: 72%;
+  top: 30%;
+  width: 5%;
+  height: 40%;
+  min-width: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+  border-radius: 0;
+
+  background-image: url("../Images/ui/card-background.png");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center;
+
+  color: #e8dcc2;
+  font-family: "PT Serif", Georgia, serif;
+  font-size: clamp(15px, 1.2vw, 24px);
+  font-weight: 700;
+  letter-spacing: 1px;
+
+  cursor: pointer;
+  z-index: 5;
+
+  box-shadow: none;
+}
+
+.language-toggle:hover {
+  filter: brightness(1.25);
+}
+
+@media (max-width: 620px) {
+  .language-toggle {
+    left: 64%;
+    top: 28%;
+    width: 7%;
+    height: 44%;
+  }
+}
+/* Шкала сложности */
+.difficulty-control {
+  position: absolute;
+
+  /*
+   * Центр шкалы находится между кнопкой RU
+   * и кнопкой генерации.
+   */
+  left: 50%;
+  top: 29%;
+
+  transform: translateX(-50%);
+
+  width: 20.4%;
+  min-width: 220px;
+  max-width: none;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  z-index: 6;
+}
+
+.difficulty-title {
+  visibility: hidden;
+
+  margin: 0 0 4px 0;
+
+  color: #d9c9a7;
+  font-family: "PT Serif", Georgia, serif;
+  font-size: clamp(9px, 0.65vw, 15px);
+  font-weight: 700;
+  letter-spacing: 1.5px;
+
+  text-shadow:
+    0 1px 2px #000,
+    0 0 5px rgba(0, 0, 0, 0.9);
+}
+
+/*
+ * Область самой шкалы.
+ *
+ * PNG шкалы теперь рисуется отдельно,
+ * а range лежит поверх неё прозрачным слоем.
+ */
+.difficulty-slider-wrap {
+  position: relative;
+
+  width: 100%;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: 0;
+}
+
+/*
+ * Цифры 1 и 5 из HTML скрываем —
+ * они уже находятся непосредственно
+ * на изображении difficulty-scale.png.
+ */
+.difficulty-slider-wrap span {
+  display: none;
+}
+
+/*
+ * Сама картинка шкалы.
+ */
+.difficulty-slider-wrap::before {
+  content: "";
+
+  position: absolute;
+  left: 50%;
+  top: 50%;
+
+  width: 115%;
+  height: 115%;
+
+  transform: translate(-50%, -50%);
+
+  background-image:
+    url("../Images/ui/difficulty-scale.png");
+
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 220%;
+
+  pointer-events: none;
+z-index: 3;
+}
+
+/*
+ * Прозрачный input поверх изображения.
+ */
+.difficulty-slider-wrap input[type="range"] {
+  position: absolute;
+
+  left: calc(9.425% - 62.95px);
+  top: 50%;
+
+  width: calc(91.75% + 83.9px);
+  height: 102px;
+
+  margin: 0;
+  padding: 0;
+
+  transform: translateY(-50%);
+
+  appearance: none;
+  -webkit-appearance: none;
+
+  background: transparent;
+  overflow: visible;
+
+  cursor: pointer;
+  z-index: 2;
+}
+
+/* Chrome / Edge / Яндекс */
+.difficulty-slider-wrap
+  input[type="range"]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 40px;
+
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Ползунок Chrome / Edge / Яндекс */
+.difficulty-slider-wrap
+  input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+
+  width: 102px;
+  height: 102px;
+
+  margin-top: -46px;
+
+  border: 0;
+  border-radius: 0;
+
+  background-image:
+    url("../Images/ui/difficulty-slider.png");
+
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+
+  filter:
+  drop-shadow(0 0 2px rgba(255, 226, 160, 0.95))
+  drop-shadow(0 0 6px rgba(218, 166, 87, 0.55));
+  cursor: pointer;
+}
+
+/* Firefox — дорожка */
+.difficulty-slider-wrap
+  input[type="range"]::-moz-range-track {
+  width: 100%;
+  height: 40px;
+
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Ползунок Firefox */
+.difficulty-slider-wrap
+  input[type="range"]::-moz-range-thumb {
+  width: 102px;
+  height: 102px;
+
+  border: 0;
+  border-radius: 0;
+
+  background-image:
+    url("../Images/ui/difficulty-slider.png");
+
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+
+  filter:
+  drop-shadow(0 0 2px rgba(255, 226, 160, 0.95))
+  drop-shadow(0 0 6px rgba(218, 166, 87, 0.55));
+  cursor: pointer;
+}
+
+.difficulty-level {
+  width: 100%;
+  height: 100px;
+
+  margin-top: 1px;
+
+  transform: translateY(-30px);
+
+  font-size: 0;
+  color: transparent;
+  text-shadow: none;
+
+  background-image:
+    url("../Images/ui/difficulty-level.png");
+
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: contain;
+}
+/* =================================
+   ОКНО АВТОРИЗАЦИИ RANDOMBUILD
+================================= */
+
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 12px;
+
+  background: rgba(5, 5, 4, 0.86);
+
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/*
+ * Новая панель Hunt: Showdown.
+ * PNG содержит рамку, заголовок, пояснение,
+ * поле-подсказку и изображение кнопки.
+ */
+.auth-card {
+  position: relative;
+  flex: 0 1 auto;
+
+  width: min(500px, calc(100vw - 24px));
+  aspect-ratio: 1487 / 1058;
+
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  background:
+    url("../Images/ui/access-closed-panel.png")
+    center / 100% 100%
+    no-repeat;
+
+  box-shadow: none;
+  text-align: center;
+}
+
+/* Заголовок и описание остаются доступны скринридерам:
+   их видимые версии уже находятся внутри PNG. */
+.auth-title,
+.auth-description {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.auth-form {
+  position: absolute;
+  inset: 0;
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+/* Прозрачное поле поверх рамки для ввода пароля.
+   Подсказка «ЕЖЕДНЕВНЫЙ ПАРОЛЬ» уже нарисована на изображении. */
+.auth-input {
+  position: absolute;
+  left: 16.4%;
+  top: 42.5%;
+  width: 66.0%;
+  height: 9.1%;
+
+  margin: 0;
+  padding: 0 10px;
+
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  background: transparent;
+
+  color: #f0dfbd;
+  caret-color: #f0dfbd;
+  font-family: "PT Serif", Georgia, serif;
+  font-size: clamp(12px, 2.5vw, 18px);
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-align: center;
+  text-shadow: 0 1px 3px #000;
+}
+
+/* Когда пользователь начинает ввод, скрываем нарисованную
+   подсказку тёмной подложкой, не закрывая декоративную рамку. */
+.auth-input:not(:placeholder-shown) {
+  background: rgba(8, 7, 5, 0.94);
+  box-shadow: inset 0 0 0 1px rgba(225, 196, 139, 0.18);
+}
+
+.auth-input:focus-visible {
+  outline: 1px solid rgba(225, 196, 139, 0.75);
+  outline-offset: -2px;
+}
+
+/* Прозрачная рабочая кнопка точно поверх кнопки на PNG. */
+.auth-submit {
+  position: absolute;
+  left: 15.7%;
+  top: 56.0%;
+  width: 67.6%;
+  height: 10.5%;
+
+  margin: 0;
+  padding: 0;
+
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  background: transparent;
+
+  color: transparent;
+  font-size: 0;
+  line-height: 0;
+
+  cursor: pointer;
+  transition: filter 0.16s ease;
+}
+
+.auth-submit:hover:not(:disabled) {
+  filter: brightness(1.10);
+}
+
+.auth-submit:active:not(:disabled) {
+  filter: brightness(0.94);
+}
+
+.auth-submit:disabled {
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+.auth-submit:focus-visible {
+  outline: 2px solid rgba(238, 208, 153, 0.85);
+  outline-offset: -5px;
+}
+
+/* Сообщения об ошибке располагаются под кнопкой,
+   в свободной центральной части панели. */
+.auth-error {
+  position: absolute;
+  left: 15%;
+  top: 68.5%;
+  width: 70%;
+  min-height: 3.5%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: 0;
+  padding: 0 4px;
+
+  color: #e39a7b;
+  font-family: "PT Serif", Georgia, serif;
+  font-size: clamp(9px, 2vw, 13px);
+  line-height: 1.25;
+  text-align: center;
+  text-shadow: 0 1px 3px #000;
+
+  pointer-events: none;
+}
+
+.auth-checking {
+  position: absolute;
+  left: 16.4%;
+  top: 42.5%;
+  width: 66.0%;
+  height: 9.1%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #e1c48b;
+  background: rgba(8, 7, 5, 0.94);
+
+  font-family: "PT Serif", Georgia, serif;
+  font-size: clamp(10px, 2.2vw, 16px);
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-align: center;
+  text-shadow: 0 1px 3px #000;
+}
+
+@media (max-width: 520px) {
+  .auth-overlay {
+    padding: 8px;
+  }
+
+  .auth-card {
+    width: min(500px, calc(100vw - 16px));
+  }
+
+  .auth-input {
+    letter-spacing: 1.5px;
+  }
+}
+
+/* =================================
+   ПОЛЕ РАНГА ОХОТНИКА
+================================= */
+
+
+.rank-control {
+  position: absolute;
+
+  left: calc(29% - 90px);
+  top: 0;
+
+  /* Сохраняем прежнюю систему координат */
+  width: 291px;
+  height: 141px;
+
+  background: none;
+  z-index: 7;
+}
+
+/* Основная картинка плашки ранга */
+.rank-control::before {
+  content: "";
+
+  position: absolute;
+
+  left: 33.4%;
+  top: 33%;
+
+  width: 50%;
+  height: 50%;
+
+  background-image:
+    url("../Images/ui/rank-input.png");
+
+  background-position: center;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Дополнительная картинка над основной плашкой */
+.rank-decoration {
+  position: absolute;
+
+  left: 33.4%;
+  bottom: 53%;
+
+  width: 50%;
+  height: auto;
+
+  display: block;
+
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Надпись уже нарисована на картинке */
+.rank-title {
+  display: none;
+}
+
+/* Поле ввода поверх уменьшенной картинки */
+.rank-input {
+  position: absolute;
+
+  left: 58.4%;
+  top: 58%;
+
+  width: 27.5%;
+  height: 14%;
+
+  transform: translate(-50%, -50%);
+
+  margin: 0;
+  padding: 0;
+
+  border: none;
+  border-radius: 0;
+  outline: none;
+
+  background: transparent !important;
+  box-shadow: none !important;
+
+  color: #e8dcc2;
+
+  font-family: "PT Serif", Georgia, serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+
+  text-align: center;
+  z-index: 1;
+}
+
+.rank-input::placeholder {
+  color: #8e8065;
+  font-size: 10px;
+}
+
+.rank-input:focus {
+  border: none;
+  outline: none;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.rank-input:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   ГОЛУБОЕ СВЕЧЕНИЕ ПОЛЯ РАНГА И КНОПКИ
+========================================= */
+
+@keyframes sky-blue-pulse {
+  0%,
+  100% {
+    filter:
+      drop-shadow(0 0 2px rgba(100, 210, 255, 0.65))
+      drop-shadow(0 0 7px rgba(55, 175, 255, 0.50));
+  }
+
+  50% {
+    filter:
+      drop-shadow(0 0 4px rgba(145, 230, 255, 0.95))
+      drop-shadow(0 0 13px rgba(55, 175, 255, 0.95))
+      drop-shadow(0 0 22px rgba(25, 125, 255, 0.55));
+  }
+}
+
+/* Ранг ещё не введён — светится плашка ввода */
+.rank-control.is-rank-required::before {
+  animation: sky-blue-pulse 1.7s ease-in-out infinite;
+}
+
+/* Заблокированная кнопка до ввода ранга:
+   показываем обычную кнопку, а не картинку генерации. */
+
+.generate-button:disabled:not(.is-generating) {
+  background-image:
+    url("../Images/ui/hunt-generate-button.png");
+
+  opacity: 0.48;
+  cursor: not-allowed;
+  filter: none;
+}
+
+.generate-button-en:disabled:not(.is-generating) {
+  background-image:
+    url("../Images/ui/hunt-generate-button-en.png");
+}
+/* =========================================
+   ПУСТЫЕ СЛОТЫ ДО ПЕРВОЙ ГЕНЕРАЦИИ
+========================================= */
+
+/* =========================================
+   КНОПКА И ПОЛНОЭКРАННАЯ ИНСТРУКЦИЯ
+========================================= */
+
+/* Кнопка остаётся доступной поверх окна ввода пароля. */
+
+
+
+
+.guide-button:focus-visible,
+.guide-close-button:focus-visible {
+  outline: 2px solid rgba(238, 208, 153, 0.95);
+  outline-offset: 3px;
+}
+
+/* Инструкция располагается поверх всего приложения, включая авторизацию. */
+.guide-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100001;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: auto;
+  padding: 18px;
+
+  background: rgba(0, 0, 0, 0.97);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.guide-image {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 96vw;
+  max-height: 96vh;
+  object-fit: contain;
+  box-shadow: 0 16px 70px rgba(0, 0, 0, 0.9);
+}
+
+.guide-close-button {
+  position: fixed;
+  top: 12px;
+  right: 14px;
+  z-index: 100002;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0 0 3px;
+
+  border: 1px solid rgba(225, 196, 139, 0.78);
+  border-radius: 0;
+  background: rgba(12, 10, 7, 0.94);
+
+  color: #e8dcc2;
+  font-family: Georgia, serif;
+  font-size: 34px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.75);
+}
+
+.guide-close-button:hover {
+  background: rgba(58, 43, 25, 0.98);
+  color: #f4dfb5;
+}
+
+@media (max-width: 620px) {
+
+  .guide-overlay {
+    padding: 54px 8px 12px;
+  }
+
+  .guide-image {
+    max-width: 98vw;
+    max-height: 92vh;
+  }
+
+  .guide-close-button {
+    top: 7px;
+    right: 8px;
+    width: 40px;
+    height: 40px;
+  }
+}
+
+
+/* =========================================================
+   RANDOMBUILD — FULL HUNT: SHOWDOWN SCREEN REDESIGN
+   The supplied full-screen artwork is the visual frame.
+   All form controls and roulette items remain interactive.
+========================================================= */
+
+:root {
+  --rb-screen-frame: url("../Images/ui/randombuild-main-screen.png");
+  --rb-roulette-gap: 0.34vh;
+  --rb-roulette-reel-height: 46.33vh;
+  --rb-roulette-card-height: calc(
+    (var(--rb-roulette-reel-height) - (var(--rb-roulette-gap) * 4)) / 5
+  );
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  overflow-x: hidden;
+  background: #080706 !important;
+}
+
+body::before {
+  display: none !important;
+}
+
+.app {
+  position: relative !important;
+  isolation: isolate;
+  width: 100vw;
+  min-width: 1120px;
+  height: 100vh;
+  min-height: 620px;
+  margin: 0 auto;
+  padding: 0 !important;
+  overflow: hidden;
+  background-color: #080706 !important;
+  background-image: var(--rb-screen-frame) !important;
+  background-position: center center !important;
+  background-size: 100% 100% !important;
+  background-repeat: no-repeat !important;
+}
+
+/* The reference artwork already contains the logo, frame and static captions. */
+.header,
+.header.header-en {
+  position: absolute !important;
+  inset: 0 0 auto 0 !important;
+  width: 100% !important;
+  height: 17.8% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  z-index: 8;
+}
+
+.header > div:not(.difficulty-control):not(.rank-control) {
+  display: none !important;
+}
+
+/* Rank input sits inside the empty framed field in the supplied artwork. */
+.rank-control {
+  position: absolute !important;
+  left: 30.15% !important;
+  top: 50% !important;
+  width: 12.35% !important;
+  height: 37% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  z-index: 10 !important;
+}
+
+.rank-control::before,
+.rank-decoration,
+.rank-title {
+  display: none !important;
+  content: none !important;
+}
+
+.rank-input {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  width: 88% !important;
+  height: 70% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
+  padding: 0 4px !important;
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #f0dfbd !important;
+  caret-color: #f0dfbd;
+  font-family: "PT Serif", Georgia, serif !important;
+  font-size: clamp(17px, 1.45vw, 25px) !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  text-shadow: 0 1px 3px #000 !important;
+}
+
+.rank-input::placeholder {
+  color: rgba(225, 196, 139, 0.65) !important;
+}
+
+.rank-input:disabled {
+  opacity: 0.58 !important;
+}
+
+/* Five selectable difficulty diamonds are part of the top artwork.
+   The real range input is transparent except for its movable red marker. */
+.difficulty-control {
+  position: absolute !important;
+  left: 47.35% !important;
+  top: 25% !important;
+  width: 16.1% !important;
+  height: 59% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  display: block !important;
+  z-index: 10 !important;
+}
+
+.difficulty-title,
+.difficulty-level {
+  display: none !important;
+}
+
+.difficulty-slider-wrap {
+  position: absolute !important;
+  left: 0 !important;
+  top: 48% !important;
+  width: 100% !important;
+  height: 52% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  background: transparent !important;
+}
+
+.difficulty-slider-wrap::before {
+  display: none !important;
+  content: none !important;
+}
+
+.difficulty-slider-wrap input[type="range"] {
+  position: absolute !important;
+  left: 6.5% !important;
+  top: 50% !important;
+  width: 87% !important;
+  height: 44px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: translateY(-50%) !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background: transparent !important;
+  opacity: 1 !important;
+  overflow: visible !important;
+  cursor: pointer !important;
+  z-index: 5 !important;
+}
+
+.difficulty-slider-wrap input[type="range"]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 36px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.difficulty-slider-wrap input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: clamp(22px, 2.05vw, 35px);
+  height: clamp(22px, 2.05vw, 35px);
+  margin-top: 0;
+  transform: rotate(45deg);
+  border: 2px solid #e7c58a;
+  border-radius: 1px;
+  background: linear-gradient(145deg, #8f2119 0%, #51110e 62%, #260907 100%);
+  box-shadow:
+    0 0 3px rgba(255, 218, 157, 0.9),
+    0 0 10px rgba(164, 37, 24, 0.75),
+    inset 0 0 0 2px rgba(20, 8, 5, 0.7);
+  cursor: grab;
+}
+
+.difficulty-slider-wrap input[type="range"]:active::-webkit-slider-thumb {
+  cursor: grabbing;
+  filter: brightness(1.2);
+}
+
+.difficulty-slider-wrap input[type="range"]::-moz-range-track {
+  width: 100%;
+  height: 36px;
+  border: 0;
+  background: transparent;
+}
+
+.difficulty-slider-wrap input[type="range"]::-moz-range-thumb {
+  width: clamp(22px, 2.05vw, 35px);
+  height: clamp(22px, 2.05vw, 35px);
+  transform: rotate(45deg);
+  border: 2px solid #e7c58a;
+  border-radius: 1px;
+  background: linear-gradient(145deg, #8f2119 0%, #51110e 62%, #260907 100%);
+  box-shadow:
+    0 0 3px rgba(255, 218, 157, 0.9),
+    0 0 10px rgba(164, 37, 24, 0.75),
+    inset 0 0 0 2px rgba(20, 8, 5, 0.7);
+  cursor: grab;
+}
+
+/* Both controls are real buttons; their artwork is already in the background. */
+.language-toggle {
+  position: absolute !important;
+  left: 66.75% !important;
+  top: 42.4% !important;
+  width: 7.55% !important;
+  height: 34% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  z-index: 10 !important;
+}
+
+.language-toggle:hover {
+  filter: brightness(1.14) !important;
+  background: transparent !important;
+}
+
+.generate-button,
+.generate-button:hover:not(:disabled),
+.generate-button:active:not(:disabled),
+.generate-button:disabled,
+.generate-button-en,
+.generate-button-en:disabled {
+  position: absolute !important;
+  left: 75.8% !important;
+  top: 41.3% !important;
+  width: 16.2% !important;
+  height: 36.5% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  cursor: pointer !important;
+  animation: none !important;
+  z-index: 10 !important;
+}
+
+.generate-button:hover:not(:disabled) {
+  filter: brightness(1.12) !important;
+}
+
+.generate-button:active:not(:disabled) {
+  filter: brightness(0.92) !important;
+}
+
+.generate-button:disabled {
+  cursor: wait !important;
+}
+
+/* The warning-mark button is drawn in the screen artwork. */
+
+
+
+/* 14 roulette lanes are aligned over the 14 columns in the reference image. */
+.roulette {
+  position: absolute !important;
+  left: 3.28% !important;
+  top: 18.02% !important;
+  width: 93.44% !important;
+  height: 65.72% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(14, minmax(0, 1fr)) !important;
+  column-gap: 0.27% !important;
+  row-gap: 0 !important;
+  align-items: stretch !important;
+  overflow: visible !important;
+  scrollbar-width: none !important;
+  z-index: 3 !important;
+}
+
+.roulette::-webkit-scrollbar {
+  display: none !important;
+}
+
+.roulette-row {
+  position: relative !important;
+  display: grid !important;
+  grid-template-rows: 18.2% 70.5% 7.9% !important;
+  row-gap: 1.4% !important;
+  flex: none !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  align-items: stretch !important;
+  overflow: visible !important;
+}
+
+/* Captions/icons are already part of the supplied reference background. */
+.roulette-label {
+  grid-row: 1 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  text-shadow: none !important;
+}
+
+.roulette-window {
+  grid-row: 2 !important;
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.roulette-window::before,
+.roulette-window::after {
+  display: none !important;
+  content: none !important;
+}
+
+.roulette-viewport {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+.roulette-track {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: var(--rb-roulette-gap) !important;
+  width: 100% !important;
+  height: auto !important;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+/* Transparent card content is placed over the card wells drawn in the artwork. */
+.roulette-card {
+  position: relative !important;
+  isolation: isolate;
+  flex: 0 0 var(--rb-roulette-card-height) !important;
+  width: 100% !important;
+  height: var(--rb-roulette-card-height) !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 3% !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+
+.roulette-card::before,
+.roulette-card::after {
+  display: none !important;
+  content: none !important;
+}
+
+.roulette-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.roulette-image {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+.roulette-image img {
+  display: block !important;
+  width: 84% !important;
+  height: 84% !important;
+  max-width: 84% !important;
+  max-height: 84% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  filter:
+    drop-shadow(0 2px 4px rgba(0, 0, 0, 0.92))
+    saturate(0.9)
+    sepia(0.08) !important;
+}
+
+.roulette-dual-pistols {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.roulette-center {
+  display: none !important;
+}
+
+/* Dynamic item names sit in the result plates drawn at the bottom of each lane. */
+.roulette-result-panel {
+  grid-row: 3 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  flex: none !important;
+  margin: 0 !important;
+  padding: 0 5% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #e9d5ad !important;
+  font-family: "PT Serif", Georgia, serif !important;
+  font-size: clamp(7px, 0.68vw, 14px) !important;
+  font-weight: 700 !important;
+  line-height: 1.05 !important;
+  text-align: center !important;
+  text-shadow:
+    0 1px 2px #000,
+    0 0 5px rgba(0, 0, 0, 0.98) !important;
+  overflow-wrap: anywhere !important;
+}
+
+.roulette-result-panel span {
+  display: block;
+  max-width: 100%;
+  animation: roulette-text-fade 0.55s ease-out both !important;
+}
+
+/* Keep auth and guide dialogs above the newly rebuilt screen. */
+.auth-overlay {
+  z-index: 99999 !important;
+}
+
+.guide-overlay {
+  z-index: 100001 !important;
+}
+
+@media (max-width: 1120px) {
+  .app {
+    width: 1120px;
+    min-width: 1120px;
+  }
+  body {
+    overflow-x: auto;
+  }
+}
+
+@media (max-height: 650px) {
+  .app {
+    min-height: 650px;
+    height: 100vh;
+  }
+  .roulette {
+    top: 18.02%;
+    height: 65.72%;
+  }
+  :root {
+    --rb-roulette-reel-height: 46.33vh;
+  }
+}
+
+/* Hide the statically highlighted first difficulty diamond. The movable
+   range thumb draws the single active red diamond for the selected level. */
+.difficulty-control::after {
+  content: "";
+  position: absolute;
+  left: 8.5%;
+  top: 74%;
+  width: clamp(22px, 2.05vw, 35px);
+  height: clamp(22px, 2.05vw, 35px);
+  transform: translate(-50%, -50%) rotate(45deg);
+  border: 1px solid rgba(139, 111, 76, 0.9);
+  background: linear-gradient(145deg, #18130f, #090806);
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.65);
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* English captions replace the Russian lettering printed in the artwork
+   while leaving the category illustrations and metal frames untouched. */
+.app-en .roulette-label {
+  position: relative !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 2px 5% !important;
+  color: #ead8b7 !important;
+  font-family: "PT Serif", Georgia, serif !important;
+  font-size: clamp(6px, 0.66vw, 12px) !important;
+  font-weight: 700 !important;
+  line-height: 1.02 !important;
+  letter-spacing: 0.15px !important;
+  text-align: center !important;
+  text-shadow: 0 1px 3px #000, 0 0 5px #000 !important;
+  text-transform: uppercase !important;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    transparent 54%,
+    rgba(8, 7, 6, 0.97) 54%,
+    rgba(8, 7, 6, 0.97) 96%,
+    transparent 96%
+  ) !important;
+}
+
+.app-en .rank-control::after {
+  content: "RANK";
+  position: absolute;
+  left: -2%;
+  top: -49%;
+  width: 104%;
+  height: 43%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(9, 7, 5, 0.94);
+  color: #e6c992;
+  font-family: "PT Serif", Georgia, serif;
+  font-size: clamp(10px, 0.9vw, 16px);
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-shadow: 0 1px 3px #000;
+  pointer-events: none;
+}
+
+.app-en .difficulty-control::before {
+  content: "DIFFICULTY LEVEL";
+  position: absolute;
+  left: -15%;
+  top: 5%;
+  width: 130%;
+  height: 34%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(9, 7, 5, 0.94);
+  color: #e6c992;
+  font-family: "PT Serif", Georgia, serif;
+  font-size: clamp(8px, 0.8vw, 14px);
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-shadow: 0 1px 3px #000;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.app-en .generate-button::before {
+  content: "GENERATE BUILD";
+  position: absolute;
+  inset: 27% 6%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(79, 48, 25, 0.9);
+  background: rgba(207, 176, 128, 0.96);
+  color: #21150d;
+  font-family: "PT Serif", Georgia, serif;
+  font-size: clamp(10px, 1.05vw, 18px);
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-shadow: 0 1px 0 rgba(255, 231, 192, 0.65);
+  box-shadow: inset 0 0 0 2px rgba(72, 43, 22, 0.25);
+}
+
+.app-en .generate-button:disabled::before {
+  filter: brightness(0.78);
+}
+
+
+/* =========================================================
+   RANDOMBUILD — POINTS 1–6 CORRECTIONS
+   Language artwork, rank controls, difficulty selector,
+   and exact roulette lane alignment.
+========================================================= */
+
+/* Switch the complete screen artwork, including the wordmark,
+   category captions, difficulty title and generate button. */
+.app.app-en {
+  --rb-screen-frame: url("../Images/ui/randombuild-main-screen-en.png");
+}
+
+/* The two backgrounds already contain the correct category captions. */
+.roulette-label,
+.app-en .roulette-label {
+  visibility: hidden !important;
+  color: transparent !important;
+  text-shadow: none !important;
+  background: transparent !important;
+}
+
+/* Rank field: cover the printed placeholder dash and center the value
+   inside the actual numeric field, leaving the arrow area clear. */
+.rank-control {
+  left: 30.15% !important;
+  top: 50% !important;
+  width: 12.35% !important;
+  height: 37% !important;
+  position: absolute !important;
+  z-index: 10 !important;
+}
+
+.rank-control::after,
+.app-en .rank-control::after {
+  content: none !important;
+  display: none !important;
+}
+
+.rank-input {
+  position: absolute !important;
+  left: 2.5% !important;
+  top: 50% !important;
+  width: 77% !important;
+  height: 70% !important;
+  transform: translateY(-50%) !important;
+  margin: 0 !important;
+  padding: 0 3px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: rgba(7, 6, 5, 0.98) !important;
+  box-shadow: none !important;
+  color: #f2dfba !important;
+  caret-color: #f2dfba !important;
+  font-family: "PT Serif", Georgia, serif !important;
+  font-size: clamp(17px, 1.45vw, 25px) !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  text-shadow: 0 1px 3px #000 !important;
+  z-index: 2 !important;
+}
+
+.rank-input::placeholder {
+  color: transparent !important;
+}
+
+.rank-input:disabled {
+  opacity: 0.58 !important;
+}
+
+/* Real, transparent hit areas are placed directly over the two arrows
+   printed in the rank plate. */
+.rank-stepper {
+  position: absolute !important;
+  top: 5% !important;
+  right: 1% !important;
+  width: 19% !important;
+  height: 90% !important;
+  display: grid !important;
+  grid-template-rows: 1fr 1fr !important;
+  gap: 0 !important;
+  z-index: 4 !important;
+}
+
+.rank-stepper button {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+}
+
+.rank-stepper button:disabled {
+  cursor: not-allowed !important;
+}
+
+.rank-stepper button:focus-visible {
+  outline: 1px solid rgba(231, 197, 138, 0.95) !important;
+  outline-offset: -3px !important;
+}
+
+/* Five independent diamond buttons replace the native range thumb.
+   Each one covers the matching printed diamond; the selected diamond
+   itself changes to red instead of drawing a second marker over a digit. */
+.difficulty-control {
+  position: absolute !important;
+  left: 47.35% !important;
+  top: 25% !important;
+  width: 16.1% !important;
+  height: 59% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  display: block !important;
+  z-index: 10 !important;
+}
+
+.difficulty-control::before,
+.difficulty-control::after,
+.app-en .difficulty-control::before {
+  content: none !important;
+  display: none !important;
+}
+
+.difficulty-title,
+.difficulty-level,
+.difficulty-slider-wrap {
+  display: none !important;
+}
+
+.difficulty-options {
+  position: absolute !important;
+  left: 0 !important;
+  top: 77% !important;
+  width: 100% !important;
+  height: 18% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.difficulty-option {
+  position: absolute !important;
+  top: 50% !important;
+  width: 1.85vw !important;
+  height: 1.85vw !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transform: translate(-50%, -50%) rotate(45deg) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: linear-gradient(145deg, #1a1712 0%, #080706 78%) !important;
+  color: #ead8b7 !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.72),
+    0 1px 3px rgba(0, 0, 0, 0.85) !important;
+  cursor: pointer !important;
+  z-index: 2 !important;
+}
+
+.difficulty-option:nth-child(1) { left: 12% !important; }
+.difficulty-option:nth-child(2) { left: 32.5% !important; }
+.difficulty-option:nth-child(3) { left: 53% !important; }
+.difficulty-option:nth-child(4) { left: 73.5% !important; }
+.difficulty-option:nth-child(5) { left: 94% !important; }
+
+.difficulty-option span {
+  display: block !important;
+  transform: rotate(-45deg) !important;
+  color: inherit !important;
+  font-family: "PT Serif", Georgia, serif !important;
+  font-size: clamp(14px, 1.1vw, 20px) !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  text-shadow: 0 1px 3px #000 !important;
+}
+
+.difficulty-option.is-active {
+  background: linear-gradient(145deg, #a93425 0%, #731a14 65%, #3a0c09 100%) !important;
+  color: #fff0d0 !important;
+  box-shadow:
+    0 0 2px rgba(255, 224, 169, 0.98),
+    0 0 9px rgba(160, 39, 28, 0.72),
+    inset 0 0 0 1px rgba(28, 7, 5, 0.72) !important;
+}
+
+.difficulty-option:disabled {
+  cursor: not-allowed !important;
+}
+
+.difficulty-option:focus-visible {
+  outline: 1px solid #f0d5a1 !important;
+  outline-offset: 4px !important;
+}
+
+/* Language toggle: hide the static lettering inside the plate and draw
+   the two live states. The selected language is highlighted in red. */
+.language-toggle {
+  position: absolute !important;
+  left: 66.75% !important;
+  top: 42.4% !important;
+  width: 7.55% !important;
+  height: 34% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.42em !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #ead8b7 !important;
+  font-family: "PT Serif", Georgia, serif !important;
+  font-size: clamp(12px, 1.02vw, 19px) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  line-height: 1 !important;
+  text-shadow: 0 1px 3px #000 !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  z-index: 11 !important;
+}
+
+
+.language-toggle .language-choice,
+.language-toggle .language-separator {
+  position: relative !important;
+  z-index: 1 !important;
+  background: transparent !important;
+}
+
+.language-toggle .language-choice {
+  color: #ead8b7 !important;
+}
+
+.language-toggle .language-choice.is-active {
+  color: #b52c20 !important;
+  text-shadow:
+    0 0 4px rgba(170, 41, 30, 0.72),
+    0 1px 2px #000 !important;
+}
+
+.language-toggle .language-separator {
+  color: #9e835c !important;
+  font-weight: 400 !important;
+}
+
+.language-toggle:hover {
+  filter: brightness(1.13) !important;
+}
+
+/* Generate control is transparent over the matching localized button
+   that is already printed in each language's screen artwork. */
+.generate-button::before,
+.app-en .generate-button::before,
+.generate-button:disabled::before,
+.app-en .generate-button:disabled::before {
+  content: none !important;
+  display: none !important;
+}
+
+.generate-button,
+.generate-button:hover:not(:disabled),
+.generate-button:active:not(:disabled),
+.generate-button:disabled,
+.generate-button-en,
+.generate-button-en:disabled {
+  position: absolute !important;
+  left: 75.8% !important;
+  top: 41.3% !important;
+  width: 16.2% !important;
+  height: 36.5% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  cursor: pointer !important;
+  animation: none !important;
+  z-index: 10 !important;
+}
+
+/* The bottom name plates have hand-drawn, slightly different widths.
+   Match those exact 14 lanes instead of forcing fourteen equal columns. */
+:root {
+  --rb-roulette-gap: 0.34vh;
+  --rb-roulette-reel-height: 46.44vh;
+  --rb-roulette-card-height: calc(
+    (var(--rb-roulette-reel-height) - (var(--rb-roulette-gap) * 4)) / 5
+  );
+}
+
+.roulette {
+  position: absolute !important;
+  left: 2.93% !important;
+  top: 18.07% !important;
+  width: 94.14% !important;
+  height: 66.10% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  grid-template-columns:
+    143fr 126fr 122fr 115fr 104fr 104fr 104fr
+    107fr 106fr 112fr 106fr 102fr 107fr 116fr !important;
+  column-gap: 0 !important;
+  row-gap: 0 !important;
+  align-items: stretch !important;
+  overflow: visible !important;
+  scrollbar-width: none !important;
+  z-index: 3 !important;
+}
+
+.roulette-row {
+  position: relative !important;
+  display: grid !important;
+  grid-template-rows: 18.65% 70.26% 9.16% !important;
+  row-gap: 0.96% !important;
+  flex: none !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  align-items: stretch !important;
+  overflow: visible !important;
+}
+
+.roulette-result-panel {
+  grid-row: 3 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  flex: none !important;
+  margin: 0 !important;
+  padding: 0 4% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #e9d5ad !important;
+  font-family: "PT Serif", Georgia, serif !important;
+  font-size: clamp(7px, 0.64vw, 13px) !important;
+  font-weight: 700 !important;
+  line-height: 1.02 !important;
+  text-align: center !important;
+  text-shadow:
+    0 1px 2px #000,
+    0 0 5px rgba(0, 0, 0, 0.98) !important;
+  overflow-wrap: anywhere !important;
+}
+
+.roulette-result-panel span {
+  display: block !important;
+  max-width: 100% !important;
+  animation: roulette-text-fade 0.55s ease-out both !important;
+}
+
+@media (max-width: 1120px) {
+  .app {
+    width: 1120px;
+    min-width: 1120px;
+  }
+}
+
+
+
+/* =========================================================
+   PIXEL-GEOMETRY CORRECTION — 25 NOV 2026
+   The artwork is 1672 x 941.  .header occupies the top
+   17.8% of .app, so all Y coordinates below are mapped
+   against that 167.5 px header coordinate space.
+   These rules intentionally replace the earlier oversized
+   rank wrapper and the difficulty hitbox offsets.
+========================================================= */
+
+/* Rank plate: outer interactive area x=506..721, y=78..146
+   in the 1672 x 941 artwork. Keep the arrow column inside
+   the wrapper, but outside the numeric input. */
+.header .rank-control {
+  position: absolute !important;
+  left: 30.26% !important;
+  top: 46.60% !important;
+  width: 12.86% !important;
+  height: 40.60% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  overflow: visible !important;
+  z-index: 20 !important;
+}
+
+.header .rank-control::before,
+.header .rank-control::after,
+.header .rank-decoration,
+.header .rank-title {
+  display: none !important;
+  content: none !important;
+}
+
+/* Numeric field: x=514..676, y=91..137.
+   It covers the decorative dash only inside the dark field. */
+.header .rank-control > .rank-input,
+.header .rank-control > .rank-input:focus,
+.header .rank-control > .rank-input:focus-visible {
+  position: absolute !important;
+  left: 41.40% !important;
+  top: 53.00% !important;
+  width: 75.30% !important;
+  height: 67.60% !important;
+  transform: translate(-50%, -50%) !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 2px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: #070605 !important;
+  background-color: #070605 !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: #f2dfba !important;
+  caret-color: #f2dfba !important;
+  font-family: "PT Serif", Georgia, serif !important;
+  font-size: clamp(17px, 1.45vw, 25px) !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  text-indent: 0 !important;
+  text-shadow: 0 1px 3px #000 !important;
+  z-index: 2 !important;
+}
+
+.header .rank-control > .rank-input::placeholder {
+  color: transparent !important;
+  opacity: 0 !important;
+}
+
+/* Transparent hit areas precisely over the two printed arrows.
+   Left and width are calculated from the 215 px rank panel. */
+.header .rank-control > .rank-stepper {
+  position: absolute !important;
+  left: 81.40% !important;
+  right: auto !important;
+  top: 3.00% !important;
+  width: 16.30% !important;
+  height: 92.60% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  grid-template-rows: 1fr 1fr !important;
+  gap: 0 !important;
+  background: transparent !important;
+  z-index: 5 !important;
+}
+
+.header .rank-control > .rank-stepper > button,
+.header .rank-control > .rank-stepper > button:hover,
+.header .rank-control > .rank-stepper > button:active,
+.header .rank-control > .rank-stepper > button:focus,
+.header .rank-control > .rank-stepper > button:focus-visible {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: transparent !important;
+  cursor: pointer !important;
+}
+
+/* Difficulty controls use the whole header as their coordinate plane.
+   This avoids the nested percentage-height drift from previous patches.
+   Diamond centers: x=823, 879, 934, 989, 1044; y=117.5. */
+.header .difficulty-control {
+  position: absolute !important;
+  left: 47.35% !important;
+  top: 0 !important;
+  width: 16.10% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  transform: none !important;
+  background: transparent !important;
+  z-index: 21 !important;
+}
+
+.header .difficulty-control::before,
+.header .difficulty-control::after,
+.header .difficulty-title,
+.header .difficulty-level,
+.header .difficulty-slider-wrap {
+  display: none !important;
+  content: none !important;
+}
+
+.header .difficulty-options {
+  position: absolute !important;
+  left: 0 !important;
+  top: 70.15% !important;
+  width: 100% !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  overflow: visible !important;
+  background: transparent !important;
+}
+
+.header .difficulty-option,
+.header .difficulty-option:hover,
+.header .difficulty-option:active,
+.header .difficulty-option:focus,
+.header .difficulty-option:focus-visible,
+.header .difficulty-option.is-active {
+  position: absolute !important;
+  top: 0 !important;
+  width: 9.85% !important;
+  height: auto !important;
+  aspect-ratio: 1 / 1 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transform: translate(calc(-50% - 1px), -50%) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  z-index: 2 !important;
+  overflow: visible !important;
+}
+
+.header .difficulty-option:nth-child(1) { left: 11.90% !important; }
+.header .difficulty-option:nth-child(2) { left: calc(32.30% + 1px) !important; }
+.header .difficulty-option:nth-child(3) { left: calc(52.80% + 2px) !important; }
+.header .difficulty-option:nth-child(4) { left: calc(73.20% + 3px) !important; }
+.header .difficulty-option:nth-child(5) { left: calc(93.60% + 4px) !important; }
+
+.header .difficulty-diamond {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  width: 100% !important;
+  height: 100% !important;
+  transform: translate(-50%, -50%) !important;
+  display: block !important;
+  object-fit: contain !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+.header .difficulty-option > span {
+  position: relative !important;
+  z-index: 2 !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  color: #f0dfbd !important;
+  font-family: "PT Serif", Georgia, serif !important;
+  font-size: clamp(14px, 1.10vw, 20px) !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  text-shadow: 0 1px 3px #000 !important;
+}
+
+.header .difficulty-option.is-active > span {
+  color: #fff0d0 !important;
+  text-shadow:
+    0 0 4px rgba(255, 224, 169, 0.65),
+    0 1px 3px #000 !important;
+}
+
+
+/* =========================================================
+   TARGETED ALIGNMENT FIX — 25 NOV 2026
+   Only the requested visual offsets are changed here.
+========================================================= */
+
+/* Enlarge the supplied diamond PNGs so they fully cover the
+   smaller printed diamond outlines in the header artwork.
+   Button hit areas and their center coordinates stay unchanged. */
+.header .difficulty-diamond {
+  /* Reduced by 30% from the previous 320% rendered size. */
+  width: 270% !important;
+  height: 270% !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+/* The language labels already exist in the screen artwork.
+   Keep the button as a transparent clickable hit area only. */
+.header .language-toggle {
+  color: transparent !important;
+  font-size: 0 !important;
+  text-shadow: none !important;
+}
+
+.header .language-toggle::before,
+.header .language-toggle::after,
+.header .language-toggle > * {
+  content: none !important;
+  display: none !important;
+}
+
+/* Lower every slot image by exactly 3 px without moving
+   the slot wells, roulette track, or selected-frame artwork. */
+.roulette-image {
+  transform: translateY(3px) !important;
+}
+
+/* Lower only the dynamic captions inside the bottom name plates
+   by exactly 5 px; the plates and column layout stay fixed. */
+.roulette-result-panel span {
+  transform: translateY(5px) !important;
+}
+
+/* =========================================================
+   TARGETED HOVER FEEDBACK — SUBTLE INTERNAL WARM HIGHLIGHT
+   Applies only to enabled interactive controls.
+   No geometry, artwork, or click-area dimensions are changed.
+========================================================= */
+
+:root {
+  --hunt-hover-light: rgba(232, 205, 154, 0.13);
+  --hunt-hover-light-soft: rgba(232, 205, 154, 0.045);
+  --hunt-hover-inset: rgba(225, 196, 139, 0.15);
+}
+
+/* Rank arrows: soft light stays inside the two transparent hit areas. */
+.header .rank-control > .rank-stepper > button {
+  transition:
+    background-image 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.header .rank-control > .rank-stepper > button:hover:not(:disabled) {
+  background-image: radial-gradient(
+    ellipse at center,
+    var(--hunt-hover-light) 0%,
+    var(--hunt-hover-light-soft) 62%,
+    transparent 88%
+  ) !important;
+  box-shadow: inset 0 0 12px var(--hunt-hover-inset) !important;
+}
+
+/* Difficulty diamonds: gently brighten the actual PNG, not its hit area. */
+.header .difficulty-diamond {
+  transition: filter 160ms ease;
+}
+
+.header .difficulty-option:hover:not(:disabled) .difficulty-diamond {
+  filter: brightness(1.10) saturate(1.05);
+}
+
+.header .difficulty-option:hover:not(:disabled) > span {
+  text-shadow:
+    0 0 5px rgba(255, 229, 188, 0.48),
+    0 1px 3px #000 !important;
+}
+
+/* Language switch: illuminate the clickable zone without adding text or a plate. */
+.header .language-toggle {
+  transition:
+    background-image 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.header .language-toggle:hover:not(:disabled) {
+  background-image: radial-gradient(
+    ellipse at center,
+    var(--hunt-hover-light) 0%,
+    var(--hunt-hover-light-soft) 62%,
+    transparent 88%
+  ) !important;
+  background-color: transparent !important;
+  box-shadow: inset 0 0 13px var(--hunt-hover-inset) !important;
+  filter: none !important;
+}
+
+/* Generate button: warm light overlays the printed artwork from inside. */
+.header .generate-button:hover:not(:disabled) {
+  background-image: radial-gradient(
+    ellipse at center,
+    var(--hunt-hover-light) 0%,
+    var(--hunt-hover-light-soft) 66%,
+    transparent 90%
+  ) !important;
+  background-color: transparent !important;
+  box-shadow: inset 0 0 17px var(--hunt-hover-inset) !important;
+  filter: none !important;
+}
+
+/* Guide button: preserve its existing slight scale-up, add only inner light. */
+
+
+/* Authorization submit: same restrained internal feedback over its artwork. */
+.auth-submit {
+  transition:
+    background-image 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.auth-submit:hover:not(:disabled) {
+  background-image: radial-gradient(
+    ellipse at center,
+    var(--hunt-hover-light) 0%,
+    var(--hunt-hover-light-soft) 66%,
+    transparent 90%
+  ) !important;
+  background-color: transparent !important;
+  box-shadow: inset 0 0 14px var(--hunt-hover-inset) !important;
+  filter: none !important;
+}
+
+/* Guide close button: keep its existing hover color, add an inner glow. */
+.guide-close-button:hover {
+  box-shadow:
+    inset 0 0 13px var(--hunt-hover-inset),
+    0 3px 14px rgba(0, 0, 0, 0.75) !important;
+}
+/* =================================
+   ПОЗИЦИЯ КНОПКИ RU / EN
+================================= */
+
+.header .language-toggle {
+  left: 67.9% !important;
+  top: 46% !important;
+}
+/* Форма кнопки инструкции */
+
+/* Возвращаем восклицательному знаку нормальное положение */
+
+/* =========================================================
+   SEPARATE BUTTON ARTWORK — 25 NOV 2026
+   Supplied PNGs are now independent interactive elements.
+   The old transparent hit areas remain only as the element geometry.
+========================================================= */
+
+/* Rank arrows: two independent image buttons beside the rank field. */
+.header .rank-control > .rank-stepper {
+  position: absolute !important;
+  left: 82.0% !important;
+  top: 4% !important;
+  width: 15.5% !important;
+  height: 92% !important;
+  display: grid !important;
+  grid-template-rows: 1fr 1fr !important;
+  gap: 2px !important;
+  z-index: 30 !important;
+}
+
+.header .rank-control > .rank-stepper > button {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  cursor: pointer !important;
+}
+
+.header .rank-control > .rank-stepper > button img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  transition: filter 140ms ease, transform 100ms ease !important;
+}
+
+.header .rank-control > .rank-stepper > button:hover:not(:disabled) img {
+  filter: brightness(1.10) saturate(1.04) !important;
+}
+
+.header .rank-control > .rank-stepper > button:active:not(:disabled) img {
+  filter: brightness(0.94) !important;
+  transform: translateY(1px) !important;
+}
+
+.header .rank-control > .rank-stepper > button:disabled img {
+  opacity: 0.42 !important;
+}
+
+/* Russian / English generate buttons: use the supplied localized PNGs directly. */
+.header .generate-button,
+.header .generate-button:hover:not(:disabled),
+.header .generate-button:active:not(:disabled),
+.header .generate-button:disabled,
+.header .generate-button-en,
+.header .generate-button-en:disabled {
+  position: absolute !important;
+  left: 74.95% !important;
+  top: 39.9% !important;
+  width: 17.3% !important;
+  height: 38.0% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  opacity: 1 !important;
+  cursor: pointer !important;
+  z-index: 30 !important;
+}
+
+.header .generate-button-image {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  transition: filter 140ms ease, transform 100ms ease !important;
+}
+
+.header .generate-button:hover:not(:disabled) .generate-button-image {
+  filter: brightness(1.08) saturate(1.03) !important;
+}
+
+.header .generate-button:active:not(:disabled) .generate-button-image {
+  filter: brightness(0.94) !important;
+  transform: translateY(1px) !important;
+}
+
+.header .generate-button:disabled:not(.is-generating) .generate-button-image {
+  opacity: 0.48 !important;
+}
+
+/* Language switch: supplied metal frame + live RU/EN state. */
+.header .language-toggle {
+  position: absolute !important;
+  left: 66.8% !important;
+  top: 40.2% !important;
+  width: 7.8% !important;
+  height: 39.0% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.32em !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #ead8b7 !important;
+  font-family: "PT Serif", Georgia, serif !important;
+  font-size: clamp(12px, 1.0vw, 18px) !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-shadow: 0 1px 3px #000 !important;
+  cursor: pointer !important;
+  overflow: visible !important;
+  z-index: 31 !important;
+}
+
+.header .language-toggle-frame {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: fill !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  z-index: 0 !important;
+}
+
+.header .language-toggle .language-choice,
+.header .language-toggle .language-separator {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.header .language-toggle .language-choice {
+  color: #ead8b7 !important;
+  transition: color 140ms ease, text-shadow 140ms ease, filter 140ms ease !important;
+}
+
+.header .language-toggle .language-choice.is-active {
+  color: #b72a20 !important;
+  text-shadow:
+    0 0 3px rgba(255, 74, 49, 0.85),
+    0 0 8px rgba(180, 35, 25, 0.72),
+    0 1px 2px #000 !important;
+}
+
+.header .language-toggle .language-separator {
+  color: #9b8059 !important;
+  font-weight: 400 !important;
+}
+
+.header .language-toggle:hover:not(:disabled) {
+  filter: none !important;
+}
+
+.header .language-toggle:hover:not(:disabled) .language-choice.is-active {
+  filter: brightness(1.12) !important;
+  text-shadow:
+    0 0 4px rgba(255, 92, 64, 0.95),
+    0 0 10px rgba(190, 38, 27, 0.78),
+    0 1px 2px #000 !important;
+}
+
+/* Do not let the previous pseudo-element language artwork interfere. */
+.header .language-toggle::before,
+.header .language-toggle::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* The supplied buttons are now the visible artwork; no old background PNGs. */
+.header .generate-button,
+.header .generate-button:hover:not(:disabled),
+.header .generate-button:active:not(:disabled),
+.header .generate-button:disabled {
+  background-image: none !important;
+  background-color: transparent !important;
+}
+
+/* Keep the already established roulette offsets untouched. */
+.roulette-image {
+  transform: translateY(3px) !important;
+}
+
+.roulette-result-panel span {
+  transform: translateY(5px) !important;
+}
+
+/* =========================================================
+   BUTTON ALIGNMENT / ARTWORK FIX — 25 NOV 2026
+   Coordinates are matched to the supplied Hunt screen artwork.
+   Each supplied PNG is displayed at its native image proportions.
+========================================================= */
+
+/* RANK: the trimmed PNG artwork fills the two existing arrow targets.
+   The hit area remains separate from the visible frame artwork. */
+.header .rank-control > .rank-stepper {
+  position: absolute !important;
+  left: 81.0% !important;
+  top: 4.0% !important;
+  width: 18.0% !important;
+  height: 92.0% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  grid-template-rows: 1fr 1fr !important;
+  gap: 2px !important;
+  overflow: visible !important;
+  background: transparent !important;
+  z-index: 30 !important;
+}
+
+.header .rank-control > .rank-stepper > button,
+.header .rank-control > .rank-stepper > button:hover,
+.header .rank-control > .rank-stepper > button:active,
+.header .rank-control > .rank-stepper > button:focus,
+.header .rank-control > .rank-stepper > button:focus-visible {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  cursor: pointer !important;
+}
+
+.header .rank-control > .rank-stepper > button img {
+  display: block !important;
+  width: 125% !important;
+  height: 125% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  opacity: 1 !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  transition: filter 140ms ease, transform 100ms ease !important;
+}
+
+.header .rank-control > .rank-stepper > button:hover:not(:disabled) img {
+  filter: brightness(1.10) saturate(1.04) !important;
+}
+
+.header .rank-control > .rank-stepper > button:active:not(:disabled) img {
+  filter: brightness(0.94) !important;
+  transform: translateY(1px) !important;
+}
+
+.header .rank-control > .rank-stepper > button:disabled img {
+  opacity: 1 !important;
+}
+
+
+/* LANGUAGE: align the frame to the actual button location.
+   Restore the RU/EN spans which an older broad selector was hiding. */
+.header .language-toggle {
+  position: absolute !important;
+  left: 66.9% !important;
+  top: 46.0% !important;
+  width: 8.8% !important;
+  height: auto !important;
+  aspect-ratio: 2.55 / 1 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.28em !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: #ead8b7 !important;
+  font-family: "PT Serif", Georgia, serif !important;
+  font-size: clamp(14px, 1.02vw, 19px) !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.035em !important;
+  text-shadow: 0 1px 3px #000 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  overflow: visible !important;
+  cursor: pointer !important;
+  z-index: 31 !important;
+}
+
+.header .language-toggle-frame {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: fill !important;
+  object-position: center !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  z-index: 0 !important;
+}
+
+.header .language-toggle > .language-choice,
+.header .language-toggle > .language-separator {
+  position: relative !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 2 !important;
+  flex: 0 0 auto !important;
+  background: transparent !important;
+}
+
+.header .language-toggle .language-choice {
+  color: #ead8b7 !important;
+  font-family: "PT Serif", Georgia, serif !important;
+  font-size: inherit !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  transition: color 140ms ease, text-shadow 140ms ease, filter 140ms ease !important;
+}
+
+.header .language-toggle .language-choice.is-active {
+  color: #c12c20 !important;
+  text-shadow:
+    0 0 2px rgba(255, 88, 63, 0.98),
+    0 0 5px rgba(220, 46, 31, 0.92),
+    0 0 10px rgba(170, 25, 18, 0.78),
+    0 1px 2px #000 !important;
+}
+
+.header .language-toggle .language-separator {
+  color: #9b8059 !important;
+  font-weight: 400 !important;
+  font-size: inherit !important;
+}
+
+.header .language-toggle:hover:not(:disabled) {
+  filter: none !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.header .language-toggle:hover:not(:disabled) .language-choice.is-active {
+  filter: brightness(1.12) !important;
+  text-shadow:
+    0 0 3px rgba(255, 105, 78, 1),
+    0 0 7px rgba(220, 46, 31, 0.96),
+    0 0 12px rgba(170, 25, 18, 0.82),
+    0 1px 2px #000 !important;
+}
+
+
+/* GENERATE: native image proportions; same position centre as RU/EN.
+   The source asset names now correspond to the correct language. */
+.header .generate-button,
+.header .generate-button:hover:not(:disabled),
+.header .generate-button:active:not(:disabled),
+.header .generate-button:disabled,
+.header .generate-button-en,
+.header .generate-button-en:disabled {
+  position: absolute !important;
+  left: 75.5% !important;
+  right: auto !important;
+  top: 32.5% !important;
+  width: 18.5% !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  opacity: 1 !important;
+  cursor: pointer !important;
+  animation: none !important;
+  z-index: 30 !important;
+}
+
+/* The two source PNGs have slightly different native canvas heights. */
+.header .generate-button:not(.generate-button-en) {
+  aspect-ratio: 2048 / 682 !important;
+}
+
+.header .generate-button.generate-button-en {
+  aspect-ratio: 2048 / 701 !important;
+}
+
+.header .generate-button-image {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: fill !important;
+  object-position: center !important;
+  opacity: 0.6 !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  transition: filter 140ms ease, transform 100ms ease !important;
+}
+
+.header .generate-button:hover:not(:disabled) .generate-button-image {
+  filter: brightness(1.08) saturate(1.03) !important;
+}
+
+.header .generate-button:active:not(:disabled) .generate-button-image {
+  filter: brightness(0.94) !important;
+  transform: translateY(1px) !important;
+}
+
+/* Заблокированная кнопка: непрозрачная, но затемнённая. */
+.header .generate-button:disabled:not(.is-generating) .generate-button-image {
+  opacity: 1 !important;
+  filter: brightness(0.58) saturate(0.84) contrast(1.04) !important;
+}
+
+.header .generate-button.is-generating .generate-button-image {
+  opacity: 1 !important;
+  filter: brightness(0.94) !important;
+}
+
+.header .generate-button:disabled {
+  cursor: not-allowed !important;
+}
+
+/* No generated pseudo-artwork is allowed on top of the supplied PNG. */
+.header .generate-button::before,
+.header .generate-button::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Preserve the previously approved roulette offsets. */
+.roulette-image {
+  transform: translateY(3px) !important;
+}
+
+.roulette-result-panel span {
+  transform: translateY(5px) !important;
+}
+
+/* =========================================================
+   РАЗДЕЛЬНАЯ ПОДСВЕТКА RU / EN ПРИ НАВЕДЕНИИ
+========================================================= */
+
+/* Две независимые зоны свечения поверх металлической рамки. */
+.header .language-toggle::before,
+.header .language-toggle::after {
+  content: "" !important;
+  display: block !important;
+  position: absolute !important;
+  top: 13% !important;
+  bottom: 13% !important;
+  width: 44% !important;
+  border-radius: 50% !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  z-index: 1 !important;
+
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 91, 61, 0.38) 0%,
+    rgba(194, 48, 31, 0.23) 48%,
+    rgba(130, 25, 17, 0.08) 72%,
+    transparent 100%
+  ) !important;
+
+  transition: opacity 160ms ease !important;
+}
+
+/* Левая половина — RU. */
+.header .language-toggle::before {
+  left: 3% !important;
+}
+
+/* Правая половина — EN. */
+.header .language-toggle::after {
+  right: 3% !important;
+}
+
+/* Наведение на RU включает только левое свечение. */
+.header .language-toggle:not(:disabled):has(
+  > .language-choice:first-of-type:hover
+)::before {
+  opacity: 1 !important;
+}
+
+/* Наведение на EN включает только правое свечение. */
+.header .language-toggle:not(:disabled):has(
+  > .language-choice:last-of-type:hover
+)::after {
+  opacity: 1 !important;
+}
+
+/* Дополнительная подсветка самих букв под курсором. */
+.header .language-toggle > .language-choice:hover {
+  filter: brightness(1.25) !important;
+  text-shadow:
+    0 0 4px rgba(255, 105, 78, 0.95),
+    0 0 9px rgba(220, 46, 31, 0.85),
+    0 1px 2px #000 !important;
+}
+
+
+/* =========================================================
+   GUIDE BUTTON — SINGLE SOURCE OF TRUTH
+   The exclamation marker is already part of randombuild-main-screen.png.
+   This button is its transparent, independent click target.
+========================================================= */
+
+/* =========================================================
+   GUIDE BUTTON — NEW ROUND EXCLAMATION ICON
+========================================================= */
+
+.guide-button {
+  position: absolute !important;
+  top: 6.7% !important;
+  right: 1.9% !important;
+
+  width: clamp(46px, 4.9vw, 82px) !important;
+  height: auto !important;
+  aspect-ratio: 1269 / 1240 !important;
+
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+
+  background: transparent !important;
+  box-shadow: none !important;
+
+  opacity: 1 !important;
+  visibility: visible !important;
+  overflow: visible !important;
+
+  cursor: pointer !important;
+  transform: none !important;
+  z-index: 100000 !important;
+}
+
+/* Новое изображение кнопки. */
+.guide-button img {
+  position: relative !important;
+  display: block !important;
+
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+
+  object-fit: contain !important;
+  object-position: center !important;
+
+  opacity: 1 !important;
+  pointer-events: none !important;
+  user-select: none !important;
+
+  filter:
+    drop-shadow(0 0 2px rgba(255, 90, 55, 0.35))
+    drop-shadow(0 2px 5px rgba(0, 0, 0, 0.8));
+
+  transition:
+    filter 160ms ease,
+    transform 160ms ease !important;
+}
+
+/* Свечение повторяет реальный контур прозрачного PNG. */
+.guide-button:hover img {
+  filter:
+    brightness(1.08)
+    drop-shadow(0 0 3px rgba(255, 100, 65, 0.95))
+    drop-shadow(0 0 7px rgba(210, 42, 25, 0.85))
+    drop-shadow(0 0 13px rgba(150, 25, 16, 0.65)) !important;
+
+  transform: scale(1.045) !important;
+}
+
+/* Нажатие. */
+.guide-button:active img {
+  filter: brightness(0.94) !important;
+  transform: scale(0.97) !important;
+}
+
+/* Убираем прямоугольную рамку фокуса. */
+.guide-button:focus-visible {
+  outline: none !important;
+}
+
+@media (max-width: 620px) {
+  .guide-button {
+    top: 6.7% !important;
+    right: 1.9% !important;
+    width: 46px !important;
+    height: auto !important;
+  }
+}
+
+/* =========================================================
+   НОВАЯ ТАБЛИЧКА РАНГА — 25 NOV 2026
+========================================================= */
+
+/* Общая область изображения ранга. */
+.header .rank-control {
+  position: absolute !important;
+
+  left: 27.3% !important;
+  top: 21.5% !important;
+
+  width: 16.75% !important;
+  height: 70.4% !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  background: transparent !important;
+  overflow: visible !important;
+  z-index: 20 !important;
+}
+
+/* Новая PNG с табличкой РАНГ и полем ввода. */
+.header .rank-control > .rank-panel-artwork {
+  position: absolute !important;
+
+  left: 0 !important;
+  top: 0 !important;
+
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+
+  object-fit: fill !important;
+  object-position: center !important;
+
+  pointer-events: none !important;
+  user-select: none !important;
+
+  z-index: 0 !important;
+}
+
+/* Поле ввода — по центру нижней металлической рамки. */
+.header .rank-control > .rank-input,
+.header .rank-control > .rank-input:focus,
+.header .rank-control > .rank-input:focus-visible {
+  position: absolute !important;
+
+  left: 49.4% !important;
+  top: 60.9% !important;
+
+  width: 58% !important;
+  height: 30% !important;
+
+  transform: translate(-50%, -50%) !important;
+
+  margin: 0 !important;
+  padding: 0 2px !important;
+
+  border: 0 !important;
+  outline: 0 !important;
+
+  background: transparent !important;
+  box-shadow: none !important;
+
+  color: #f2dfba !important;
+  caret-color: #f2dfba !important;
+
+  text-align: center !important;
+  text-shadow: 0 1px 3px #000 !important;
+
+  z-index: 2 !important;
+}
+
+/* Кнопки изменения ранга справа от таблички. */
+.header .rank-control > .rank-stepper {
+  position: absolute !important;
+
+  left: 81.5% !important;
+  top: 21.5% !important;
+
+  width: 18.5% !important;
+  height: 65.8% !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  display: grid !important;
+  grid-template-rows: 1fr 1fr !important;
+  gap: 0 !important;
+
+  background: transparent !important;
+  z-index: 5 !important;
+}
+
+/* Старую анимацию синего свечения отключаем:
+   на новой табличке уже есть красные декоративные элементы. */
+.header .rank-control.is-rank-required::before {
+  animation: none !important;
+}
+
+
+/* ==========================================
+   RED HOVER GLOW — HUNT: SHOWDOWN
+========================================== */
+
+/* Плавность появления свечения */
+.header .rank-control > .rank-stepper > button img,
+.header .difficulty-option .difficulty-diamond,
+.header .generate-button-image,
+.header .language-toggle-frame,
+.guide-button img {
+    transition: filter 0.18s ease !important;
+}
+
+/* Стрелки увеличения и уменьшения ранга */
+.header .rank-control > .rank-stepper > button:hover:not(:disabled) img,
+
+/* Ромбы выбора сложности */
+.header .difficulty-option:hover:not(:disabled) .difficulty-diamond,
+
+/* Кнопка генерации билда */
+.header .generate-button:hover:not(:disabled) .generate-button-image,
+
+/* Кнопка смены языка */
+.header .language-toggle:hover:not(:disabled) .language-toggle-frame,
+
+/* Кнопка инструкции */
+.guide-button:hover img {
+    filter:
+        brightness(1.12)
+        drop-shadow(0 0 2px rgba(255, 85, 55, 1))
+        drop-shadow(0 0 6px rgba(205, 35, 22, 0.95))
+        drop-shadow(0 0 12px rgba(150, 20, 15, 0.75)) !important;
+}
+
+/* Усиленное свечение при нажатии */
+.header .rank-control > .rank-stepper > button:active img,
+.header .difficulty-option:active .difficulty-diamond,
+.header .generate-button:active:not(:disabled) .generate-button-image,
+.header .language-toggle:active .language-toggle-frame,
+.guide-button:active img {
+    filter:
+        brightness(0.95)
+        drop-shadow(0 0 4px rgba(255, 65, 40, 1))
+        drop-shadow(0 0 10px rgba(190, 25, 15, 0.9)) !important;
+}
+
+/* =========================================================
+   БАННЕР УРОВНЯ СЛОЖНОСТИ — RU / EN
+========================================================= */
+
+.header .difficulty-control > .difficulty-title-image {
+  position: absolute !important;
+
+  left: -6.5% !important;
+  top: 10% !important;
+
+  display: block !important;
+
+  width: 115% !important;
+  height: auto !important;
+  max-width: none !important;
+
+  aspect-ratio: 2048 / 682 !important;
+  object-fit: contain !important;
+  object-position: center !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  pointer-events: none !important;
+  user-select: none !important;
+
+  z-index: 1 !important;
+}
+
+/* =========================================================
+   HUNT: SHOWDOWN — ЖИВОЕ ПЛАМЯ ФОНАРЯ
+========================================================= */
+
+.lantern-firelight {
+  position: absolute !important;
+
+  /* Положение относительно полного фонового изображения */
+  left: 22.4% !important;
+  top: 91.45% !important;
+
+  /* Размер области внутри стекла фонаря */
+  width: 1.2% !important;
+  height: 2% !important;
+
+  pointer-events: none !important;
+  z-index: 2 !important;
+  isolation: isolate !important;
+}
+
+/* Тёплый свет вокруг фонаря */
+.lantern-firelight::before {
+  content: "" !important;
+
+  position: absolute !important;
+  inset: -280% -340% !important;
+
+  border-radius: 50% !important;
+
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 190, 92, 0.38) 0%,
+    rgba(255, 135, 42, 0.23) 32%,
+    rgba(255, 91, 20, 0.10) 57%,
+    transparent 78%
+  ) !important;
+
+  filter: blur(7px) !important;
+  opacity: 0.75 !important;
+
+  animation: lantern-halo-flicker 5.8s ease-in-out infinite !important;
+}
+
+/* Само пламя внутри стекла */
+.lantern-firelight::after {
+  content: "" !important;
+
+  position: absolute !important;
+
+  left: 23% !important;
+  right: 23% !important;
+  top: 8% !important;
+  bottom: 8% !important;
+
+  border-radius: 48% 48% 42% 42% / 65% 65% 35% 35% !important;
+
+  background: radial-gradient(
+    ellipse at 50% 68%,
+    rgba(255, 255, 205, 0.98) 0%,
+    rgba(255, 220, 135, 0.94) 20%,
+    rgba(255, 155, 58, 0.83) 46%,
+    rgba(255, 91, 20, 0.42) 68%,
+    transparent 100%
+  ) !important;
+
+  filter:
+    blur(1px)
+    drop-shadow(0 0 3px rgba(255, 183, 78, 0.9)) !important;
+
+  mix-blend-mode: screen !important;
+  transform-origin: 50% 90% !important;
+
+  animation: lantern-flame-flicker 4.2s ease-in-out infinite !important;
+}
+
+/* Хаотичные изменения размера и яркости пламени */
+
+@keyframes lantern-flame-flicker {
+  0% {
+    opacity: 0.84;
+    transform: scale(0.97, 0.98) rotate(-0.3deg);
+  }
+
+  7% {
+    opacity: 0.93;
+    transform: scale(1.04, 1.08) rotate(0.5deg);
+  }
+
+  16% {
+    opacity: 0.82;
+    transform: scale(0.96, 0.94) rotate(-0.4deg);
+  }
+
+  24% {
+    opacity: 0.96;
+    transform: scale(1.06, 1.10) rotate(0.6deg);
+  }
+
+  37% {
+    opacity: 0.87;
+    transform: scale(0.99, 1.00) rotate(-0.2deg);
+  }
+
+  44% {
+    opacity: 0.91;
+    transform: scale(1.02, 1.05) rotate(0.3deg);
+  }
+
+  56% {
+    opacity: 0.80;
+    transform: scale(0.95, 0.93) rotate(-0.5deg);
+  }
+
+  63% {
+    opacity: 0.97;
+    transform: scale(1.07, 1.12) rotate(0.6deg);
+  }
+
+  76% {
+    opacity: 0.86;
+    transform: scale(0.98, 0.97) rotate(-0.3deg);
+  }
+
+  84% {
+    opacity: 0.94;
+    transform: scale(1.03, 1.07) rotate(0.4deg);
+  }
+
+  93% {
+    opacity: 0.83;
+    transform: scale(0.96, 0.95) rotate(-0.4deg);
+  }
+
+  100% {
+    opacity: 0.84;
+    transform: scale(0.97, 0.98) rotate(-0.3deg);
+  }
+}
+
+
+/* Независимое мерцание окружающего свечения */
+@keyframes lantern-halo-flicker {
+  0% {
+    opacity: 0.68;
+    transform: scale(0.96);
+  }
+
+  18% {
+    opacity: 0.75;
+    transform: scale(1.02);
+  }
+
+  35% {
+    opacity: 0.66;
+    transform: scale(0.98);
+  }
+
+  53% {
+    opacity: 0.79;
+    transform: scale(1.04);
+  }
+
+  70% {
+    opacity: 0.69;
+    transform: scale(0.97);
+  }
+
+  86% {
+    opacity: 0.76;
+    transform: scale(1.03);
+  }
+
+  100% {
+    opacity: 0.68;
+    transform: scale(0.96);
+  }
+}
+
+/* =========================================================
+
+/* =========================================================
+
+/* =========================================================
+
+/* =========================================================
+   HUNT — PERIMETER LIGHT FLOW
+   Свет идёт от металлической рамки внутрь таблички.
+========================================================= */
+
+/* =========================================================
+   1. РАНГ — СВЕТЯЩИЙСЯ ВНУТРЕННИЙ ПЕРИМЕТР
+========================================================= */
+
+.header .rank-control {
+  isolation: isolate !important;
+}
+
+/* Область внутренней поверхности таблички. */
+.header .rank-control > .rank-required-glow {
+  position: absolute !important;
+
+  left: 49.8% !important;
+  top: 60.9% !important;
+  width: 62% !important;
+height: 42% !important;
+
+  transform: translate(-50%, -50%) !important;
+
+  display: block !important;
+  pointer-events: none !important;
+
+  background: transparent !important;
+  opacity: 0 !important;
+
+  z-index: 1 !important;
+}
+
+/* Основное свечение по четырём сторонам внутренней рамки. */
+.header .rank-control > .rank-required-glow::before {
+  content: "" !important;
+
+  position: absolute !important;
+  inset: 0 !important;
+
+  clip-path: polygon(
+    2% 0%,
+    98% 0%,
+    100% 14%,
+    100% 86%,
+    98% 100%,
+    2% 100%,
+    0% 86%,
+    0% 14%
+  ) !important;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 239, 181, 0.65) 0%,
+      rgba(255, 224, 150, 0.35) 8%,
+      rgba(255, 215, 137, 0.12) 23%,
+      transparent 42%,
+      transparent 58%,
+      rgba(255, 215, 137, 0.12) 77%,
+      rgba(255, 224, 150, 0.35) 92%,
+      rgba(255, 239, 181, 0.65) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 239, 181, 0.65) 0%,
+      rgba(255, 224, 150, 0.32) 12%,
+      rgba(255, 215, 137, 0.10) 30%,
+      transparent 47%,
+      transparent 53%,
+      rgba(255, 215, 137, 0.10) 70%,
+      rgba(255, 224, 150, 0.32) 88%,
+      rgba(255, 239, 181, 0.65) 100%
+    ) !important;
+
+  box-shadow:
+    inset 0 0 7px 1px rgba(255, 232, 174, 0.50),
+    inset 0 0 19px 4px rgba(255, 207, 125, 0.22) !important;
+
+  filter: blur(1.5px) !important;
+  mix-blend-mode: screen !important;
+
+  opacity: 0;
+}
+
+/* Свет включается только при пустом или некорректном ранге. */
+.header .rank-control.is-rank-required > .rank-required-glow {
+  opacity: 1 !important;
+}
+
+/* Световая волна медленно движется от краёв к центру. */
+.header .rank-control.is-rank-required > .rank-required-glow::before {
+  animation: rank-perimeter-flow 4.6s ease-in-out infinite !important;
+}
+
+@keyframes rank-perimeter-flow {
+  0%, 100% {
+    inset: 0%;
+    opacity: 0.0;
+    filter: blur(1.5px);
+  }
+
+  50% {
+    inset: 7%;
+    opacity: 0.20;
+    filter: blur(3px);
+  }
+}
+
+/* Цифры всегда остаются поверх свечения. */
+.header .rank-control > .rank-input {
+  background: transparent !important;
+  z-index: 2 !important;
+}
+
+
+/* =========================================================
+   2. КНОПКА ГЕНЕРАЦИИ — ТОТ ЖЕ ЭФФЕКТ
+========================================================= */
+
+.header .generate-button {
+  position: absolute !important;
+  isolation: isolate !important;
+  overflow: visible !important;
+}
+
+/* Область внутренней поверхности кнопки. */
+.header .generate-button > .generate-button-inner-glow {
+  position: absolute !important;
+
+  left: 9% !important;
+  right: 9% !important;
+  top: 10% !important;
+  bottom: 10% !important;
+
+  display: block !important;
+  pointer-events: none !important;
+
+  background: transparent !important;
+  opacity: 0 !important;
+
+  z-index: 2 !important;
+}
+
+/* Изображение кнопки остаётся под световым слоем. */
+.header .generate-button > .generate-button-image {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Свет по всему внутреннему периметру кнопки. */
+.header .generate-button > .generate-button-inner-glow::before {
+  content: "" !important;
+
+  position: absolute !important;
+  inset: 0 !important;
+
+  clip-path: polygon(
+    4% 0%,
+    96% 0%,
+    100% 17%,
+    100% 83%,
+    96% 100%,
+    4% 100%,
+    0% 83%,
+    0% 17%
+  ) !important;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 240, 183, 0.75) 0%,
+      rgba(255, 225, 150, 0.38) 8%,
+      rgba(255, 215, 137, 0.12) 24%,
+      transparent 43%,
+      transparent 57%,
+      rgba(255, 215, 137, 0.12) 76%,
+      rgba(255, 225, 150, 0.38) 92%,
+      rgba(255, 240, 183, 0.75) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 240, 183, 0.70) 0%,
+      rgba(255, 225, 150, 0.34) 13%,
+      rgba(255, 215, 137, 0.10) 31%,
+      transparent 47%,
+      transparent 53%,
+      rgba(255, 215, 137, 0.10) 69%,
+      rgba(255, 225, 150, 0.34) 87%,
+      rgba(255, 240, 183, 0.70) 100%
+    ) !important;
+
+  box-shadow:
+    inset 0 0 8px 2px rgba(255, 235, 178, 0.58),
+    inset 0 0 21px 5px rgba(255, 203, 118, 0.26) !important;
+
+  filter: blur(1.5px) !important;
+  mix-blend-mode: screen !important;
+
+  opacity: 0;
+}
+
+/* Включаем эффект после ввода корректного ранга. */
+.header .generate-button.is-rank-ready:not(:disabled):not(.is-generating)
+  > .generate-button-inner-glow {
+  opacity: 1 !important;
+}
+
+/* Световая волна движется от рамки к центру. */
+.header .generate-button.is-rank-ready:not(:disabled):not(.is-generating)
+  > .generate-button-inner-glow::before {
+  animation: generate-perimeter-flow 4.6s ease-in-out infinite !important;
+}
+
+@keyframes generate-perimeter-flow {
+  0%, 100% {
+    inset: 0%;
+    opacity: 0.22;
+    filter: blur(1.5px);
+  }
+
+  50% {
+    inset: 8%;
+    opacity: 0.38;
+    filter: blur(3.2px);
+  }
+}
+
+/* =========================================================
+ 
+/* =========================================================
+
+/* =========================================================
+   ANIMATED RED FOG — RANK PANEL
+========================================================= */
+
+.header .rank-control > .rank-required-glow {
+  overflow: visible !important;
+}
+
+/* Приглушённый красный туман */
+.header .rank-control > .rank-required-glow::after {
+  content: "" !important;
+
+  position: absolute !important;
+  left: -8% !important;
+  top: -15% !important;
+  width: 116% !important;
+  height: 130% !important;
+
+  pointer-events: none !important;
+
+  background:
+    radial-gradient(
+      ellipse at 18% 55%,
+      rgba(205, 48, 38, 0.15) 0%,
+      rgba(170, 28, 25, 0.07) 32%,
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse at 72% 35%,
+      rgba(225, 58, 42, 0.13) 0%,
+      rgba(165, 25, 22, 0.06) 35%,
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse at 52% 78%,
+      rgba(185, 35, 28, 0.12) 0%,
+      transparent 62%
+    );
+
+  background-size:
+    145% 145%,
+    140% 140%,
+    130% 150%;
+
+  background-position:
+    0% 50%,
+    100% 40%,
+    40% 100%;
+
+  filter: blur(14px) !important;
+  mix-blend-mode: screen !important;
+
+  opacity: 0.18;
+  transform: translate3d(-9%, 1%, 0) scale(1.04);
+
+  will-change: transform, opacity, background-position;
+
+  z-index: 2 !important;
+}
+
+/* Туман включён, пока ранг не введён. */
+.header .rank-control.is-rank-required > .rank-required-glow::after {
+  animation:
+    rank-fog-drift 11s ease-in-out infinite alternate,
+    rank-fog-breathe 7s ease-in-out infinite alternate !important;
+}
+
+/* Медленное движение облаков. */
+@keyframes rank-fog-drift {
+  0% {
+    transform: translate3d(-10%, 2%, 0) scale(1.04);
+    background-position: 0% 50%, 100% 40%, 40% 100%;
+  }
+
+  25% {
+    transform: translate3d(3%, -3%, 0) scale(1.08);
+    background-position: 45% 20%, 55% 80%, 85% 35%;
+  }
+
+  50% {
+    transform: translate3d(11%, 2%, 0) scale(1.06);
+    background-position: 100% 65%, 0% 50%, 15% 0%;
+  }
+
+  75% {
+    transform: translate3d(-2%, -2%, 0) scale(1.10);
+    background-position: 65% 85%, 35% 15%, 100% 75%;
+  }
+
+  100% {
+    transform: translate3d(-10%, 1%, 0) scale(1.04);
+    background-position: 0% 50%, 100% 40%, 40% 100%;
+  }
+}
+
+/* Очень мягкое изменение плотности. */
+@keyframes rank-fog-breathe {
+  0%, 100% {
+    opacity: 0.0;
+  }
+
+  50% {
+    opacity: 0.2;
+  }
+}
+
+/* =========================================================
+   RED TINT OVERRIDE — RANK PANEL
+========================================================= */
+
+/* Красное свечение по внутреннему периметру. */
+.header .rank-control > .rank-required-glow::before {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(225, 48, 38, 0.62) 0%,
+      rgba(190, 32, 29, 0.34) 10%,
+      rgba(145, 22, 25, 0.12) 27%,
+      transparent 45%,
+      transparent 55%,
+      rgba(145, 22, 25, 0.12) 73%,
+      rgba(190, 32, 29, 0.34) 90%,
+      rgba(225, 48, 38, 0.62) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(225, 48, 38, 0.62) 0%,
+      rgba(190, 32, 29, 0.32) 13%,
+      rgba(145, 22, 25, 0.10) 31%,
+      transparent 47%,
+      transparent 53%,
+      rgba(145, 22, 25, 0.10) 69%,
+      rgba(190, 32, 29, 0.32) 87%,
+      rgba(225, 48, 38, 0.62) 100%
+    ) !important;
+
+  box-shadow:
+    inset 0 0 7px 1px rgba(255, 75, 55, 0.42),
+    inset 0 0 19px 4px rgba(170, 20, 25, 0.28) !important;
+
+  mix-blend-mode: color !important;
+}
+
+/* Красная дымка внутри таблички. */
+.header .rank-control > .rank-required-glow::after {
+  background:
+    radial-gradient(
+      ellipse at 18% 55%,
+      rgba(190, 25, 30, 0.42) 0%,
+      rgba(150, 18, 25, 0.20) 38%,
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse at 72% 35%,
+      rgba(220, 42, 35, 0.34) 0%,
+      rgba(155, 20, 25, 0.16) 40%,
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse at 52% 78%,
+      rgba(175, 20, 28, 0.30) 0%,
+      transparent 65%
+    ) !important;
+
+  mix-blend-mode: color !important;
+}
+
+/* =========================================================
+   GENERATE BUTTON — EXPANDED RED INNER GLOW
+========================================================= */
+
+/* Увеличиваем площадь свечения внутри кнопки. */
+.header .generate-button > .generate-button-inner-glow {
+  left: 5% !important;
+  right: 4% !important;
+  top: 23% !important;
+  bottom: 24% !important;
+}
+
+/* Полностью перекрашиваем световую волну в красный. */
+.header .generate-button > .generate-button-inner-glow::before {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(235, 48, 38, 0.62) 0%,
+      rgba(205, 34, 29, 0.38) 9%,
+      rgba(165, 24, 25, 0.15) 25%,
+      transparent 44%,
+      transparent 56%,
+      rgba(165, 24, 25, 0.15) 75%,
+      rgba(205, 34, 29, 0.38) 91%,
+      rgba(235, 48, 38, 0.62) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(235, 48, 38, 0.62) 0%,
+      rgba(205, 34, 29, 0.36) 12%,
+      rgba(165, 24, 25, 0.13) 30%,
+      transparent 47%,
+      transparent 53%,
+      rgba(165, 24, 25, 0.13) 70%,
+      rgba(205, 34, 29, 0.36) 88%,
+      rgba(235, 48, 38, 0.62) 100%
+    ) !important;
+
+  box-shadow:
+    inset 0 0 10px 2px rgba(255, 65, 48, 0.48),
+    inset 0 0 24px 6px rgba(190, 22, 24, 0.32) !important;
+
+  filter: blur(2px) !important;
+  mix-blend-mode: screen !important;
+}
+
+
+/* =========================================================
+   HUNT: SHOWDOWN — TWO RANDOM RED LIGHT SOURCES
+========================================================= */
+
+/* Общая форма двух световых точек */
+.app::before,
+.app::after {
+  content: "" !important;
+  position: absolute !important;
+
+  left: 49.9% !important;
+  width: 15% !important;
+  height: 5.5% !important;
+
+  border-radius: 50% !important;
+  pointer-events: none !important;
+
+  background:
+    radial-gradient(
+      ellipse 12% 28% at 50% 50%,
+      rgba(255, 225, 205, 0.90) 0%,
+      rgba(255, 65, 45, 0.86) 23%,
+      rgba(220, 25, 20, 0.48) 52%,
+      transparent 100%
+    ),
+    radial-gradient(
+      ellipse 42% 78% at 50% 50%,
+      rgba(240, 30, 22, 0.38) 0%,
+      rgba(175, 10, 15, 0.16) 52%,
+      transparent 100%
+    ) !important;
+
+  filter: blur(2px) !important;
+  mix-blend-mode: screen !important;
+
+  transform: translate(-50%, -50%);
+  pointer-events: none !important;
+  will-change: transform, opacity;
+
+  z-index: 2 !important;
+}
+
+/* ВЕРХНЯЯ ТОЧКА */
+.app::before {
+  top: 2.5% !important;
+
+  animation:
+    top-red-star-flicker 4.7s ease-in-out infinite !important;
+
+  animation-delay: -1.35s !important;
+}
+
+/* НИЖНЯЯ ТОЧКА */
+.app::after {
+  top: 97.5% !important;
+
+  animation:
+    bottom-red-star-flicker 5.3s ease-in-out infinite !important;
+
+  animation-delay: -2.7s !important;
+}
+
+/* Нерегулярное мерцание верхней точки */
+@keyframes top-red-star-flicker {
+  0% {
+    opacity: 0.48;
+    transform: translate(-50%, -50%) scale(0.84);
+  }
+
+  8% {
+    opacity: 0.92;
+    transform: translate(-50%, -50%) scale(1.10);
+  }
+
+  17% {
+    opacity: 0.62;
+    transform: translate(-50%, -50%) scale(0.91);
+  }
+
+  29% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+
+  42% {
+    opacity: 0.70;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+
+  54% {
+    opacity: 0.88;
+    transform: translate(-50%, -50%) scale(1.04);
+  }
+
+  63% {
+    opacity: 0.52;
+    transform: translate(-50%, -50%) scale(0.87);
+  }
+
+  76% {
+    opacity: 0.96;
+    transform: translate(-50%, -50%) scale(1.12);
+  }
+
+  88% {
+    opacity: 0.66;
+    transform: translate(-50%, -50%) scale(0.93);
+  }
+
+  100% {
+    opacity: 0.48;
+    transform: translate(-50%, -50%) scale(0.84);
+  }
+}
+
+/* Нерегулярное мерцание нижней точки */
+@keyframes bottom-red-star-flicker {
+  0% {
+    opacity: 0.68;
+    transform: translate(-50%, -50%) scale(0.93);
+  }
+
+  12% {
+    opacity: 0.96;
+    transform: translate(-50%, -50%) scale(1.13);
+  }
+
+  24% {
+    opacity: 0.54;
+    transform: translate(-50%, -50%) scale(0.86);
+  }
+
+  38% {
+    opacity: 0.84;
+    transform: translate(-50%, -50%) scale(1.02);
+  }
+
+  47% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.17);
+  }
+
+  61% {
+    opacity: 0.61;
+    transform: translate(-50%, -50%) scale(0.90);
+  }
+
+  73% {
+    opacity: 0.91;
+    transform: translate(-50%, -50%) scale(1.09);
+  }
+
+  86% {
+    opacity: 0.50;
+    transform: translate(-50%, -50%) scale(0.85);
+  }
+
+  100% {
+    opacity: 0.68;
+    transform: translate(-50%, -50%) scale(0.93);
+  }
+}
+
+/* =========================================================
+   ДЕСЯТИУРОВНЕВЫЙ ПРОГРЕСС КОНТРАКТОВ — НИЖНИЙ ЛЕВЫЙ УГОЛ
+========================================================= */
+
+.contract-progress {
+  position: absolute !important;
+  left: clamp(22px, 2.2vw, 42px) !important;
+  bottom: clamp(18px, 2.5vh, 30px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  z-index: 40 !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+.contract-progress-list {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.contract-progress-step {
+  position: relative !important;
+  flex: 0 0 clamp(45px, 3.6vw, 69px) !important;
+width: clamp(45px, 3.6vw, 69px) !important;
+height: clamp(45px, 3.6vw, 69px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 -16px 0 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.contract-progress-step > img {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  transition: filter 180ms ease, opacity 180ms ease, transform 180ms ease !important;
+}
+
+.contract-progress-step > span {
+  position: relative !important;
+  z-index: 1 !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #d8c7a7 !important;
+  font-family: "PT Serif", Georgia, serif !important;
+  font-size: clamp(9px, 0.68vw, 13px) !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  text-shadow: 0 1px 3px #000, 0 0 4px rgba(0, 0, 0, 0.95) !important;
+}
+
+.contract-progress-step.is-upcoming > img {
+  opacity: 1 !important;
+  filter: brightness(0.58) saturate(0.62) !important;
+}
+
+.contract-progress-step.is-upcoming > span {
+  color: #cdbfa3 !important;
+}
+
+.contract-progress-step.is-completed > img {
+  opacity: 1 !important;
+  filter: brightness(0.86) saturate(0.92) !important;
+}
+
+.contract-progress-step.is-current > img {
+  opacity: 1 !important;
+  transform: scale(1.08) !important;
+  filter:
+    brightness(1.08)
+    drop-shadow(0 0 3px rgba(255, 76, 48, 0.95))
+    drop-shadow(0 0 8px rgba(190, 28, 22, 0.78)) !important;
+}
+
+.contract-progress-step.is-current > span {
+  color: #fff0d0 !important;
+  text-shadow:
+    0 0 5px rgba(255, 224, 169, 0.55),
+    0 1px 3px #000 !important;
+}
+
+@media (max-width: 1280px) {
+  .contract-progress {
+    left: 20px !important;
+    bottom: 18px !important;
+  }
+
+  .contract-progress-list {
+    gap: 2.5px !important;
+  }
+
+  .contract-progress-step {
+    flex-basis: 22px !important;
+    width: 22px !important;
+    height: 22px !important;
+  }
+}
+
+/* =========================================================
+   CONTRACT LEVEL SWITCH — MANUAL / LOCKED SELECTION
+   OFF: the ten diamonds are selectable.
+   ON: the last locked level is restored and selection is locked.
+========================================================= */
+
+.contract-mode-switch {
+  position: absolute !important;
+  left: clamp(22px, 2.2vw, 42px) !important;
+  bottom: calc(
+    clamp(18px, 2.5vh, 30px) +
+    clamp(45px, 3.6vw, 69px) +
+    -30px
+  ) !important;
+  width: clamp(210px, 16vw, 300px) !important;
+  height: auto !important;
+  aspect-ratio: 2048 / 758 !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  z-index: 42 !important;
+  overflow: visible !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.contract-mode-switch:disabled {
+  cursor: default !important;
+  opacity: 1 !important;
+}
+
+.contract-mode-switch-art {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: fill !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+.contract-mode-switch-knob {
+  position: absolute !important;
+  left: 20% !important;
+  top: 50% !important;
+  width: 20% !important;
+  height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  display: block !important;
+  transform: translateY(-50%) !important;
+  object-fit: contain !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.62)) !important;
+  transition: left 420ms cubic-bezier(0.22, 0.75, 0.25, 1) !important;
+}
+
+.contract-mode-switch.is-on .contract-mode-switch-knob {
+  left: 59% !important;
+}
+
+.contract-mode-switch:not(:disabled):hover .contract-mode-switch-art {
+  filter: brightness(1.08) !important;
+}
+
+.contract-mode-switch:not(:disabled):active .contract-mode-switch-knob {
+  filter: brightness(1.08) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.62)) !important;
+}
+
+/* In OFF mode the progress diamonds become real selectable buttons. */
+.contract-progress {
+  pointer-events: auto !important;
+}
+
+.contract-progress-step {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  border: 0 !important;
+  outline: 0 !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  transition: transform 180ms ease, filter 180ms ease !important;
+}
+
+.contract-progress-step:disabled {
+  cursor: not-allowed !important;
+}
+
+.contract-progress.is-manual .contract-progress-step:not(:disabled):hover > img {
+  filter:
+    brightness(1.12)
+    drop-shadow(0 0 4px rgba(255, 100, 65, 0.82)) !important;
+}
+
+.contract-progress.is-manual .contract-progress-step:not(:disabled):hover {
+  transform: translateY(-2px) !important;
+}
+
+.contract-progress-step:focus-visible {
+  outline: 1px solid rgba(255, 210, 155, 0.9) !important;
+  outline-offset: 2px !important;
+}
+
+@media (max-width: 1280px) {
+  .contract-mode-switch {
+    left: 20px !important;
+    bottom: calc(18px + 22px + 8px) !important;
+    width: clamp(190px, 18vw, 245px) !important;
+  }
+}
+
+/* Уменьшаем область взаимодействия с переключателем */
+.contract-mode-switch {
+  pointer-events: none !important;
+}
+
+/* Новая, уменьшенная область клика */
+.contract-mode-switch::after {
+  content: "" !important;
+
+  position: absolute !important;
+
+  left: 10% !important;
+  top: 14% !important;
+  width: 70% !important;
+  height: 50% !important;
+
+  pointer-events: auto !important;
+  cursor: pointer !important;
+
+  z-index: 50 !important;
+}
+
+/* =========================================================
+   ОСНОВНАЯ ДОСКА СТАТИСТИКИ + ВЕРТИКАЛЬНАЯ ДОСКА ЦЕЛЕЙ
+   Целевая доска равна основной по высоте и стоит непосредственно справа.
+========================================================= */
+.contract-side-board {
+  position: absolute !important;
+  left: calc(100% + 0px) !important;
+  top: 10% !important;
+  width: clamp(180px, 18vw, 320px) !important;
+  height: auto !important;
+  aspect-ratio: 2 / 1 !important;
+  display: block !important;
+  transform: translateY(-50%) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  z-index: 1 !important;
+  isolation: isolate !important;
+  overflow: visible !important;
+}
+
+.contract-side-board-image {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: left center !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  z-index: 1 !important;
+}
+
+/* Четыре строки основной доски: убийства, использовано денег, заработано денег, чистая прибыль. */
+.contract-side-board-indicators {
+  position: absolute !important;
+  left: 8% !important;
+  right: 10.5% !important;
+  top: 14% !important;
+  bottom: 14% !important;
+  display: grid !important;
+  grid-template-rows: repeat(4, minmax(0, 1fr)) !important;
+  align-items: stretch !important;
+  z-index: 2 !important;
+}
+
+.contract-side-board-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 24% !important;
+  column-gap: 3% !important;
+  align-items: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+.contract-side-board-row > .contract-side-board-indicator,
+.contract-side-board-row > .contract-side-board-value {
+  grid-column: 2 !important;
+}
+
+.contract-side-board-value {
+  display: block !important;
+  justify-self: end !important;
+  min-width: 0 !important;
+  color: #ead8b7 !important;
+  font-family: "PT Serif", Georgia, serif !important;
+  font-size: clamp(9px, 0.92cqw, 16px) !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  text-align: right !important;
+  white-space: nowrap !important;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.98),
+    0 0 5px rgba(0, 0, 0, 0.9) !important;
+}
+
+.contract-side-board-indicator {
+  display: block !important;
+  justify-self: end !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  aspect-ratio: 988 / 1006 !important;
+  object-fit: contain !important;
+  transform: translateX(20%) !important;
+  filter:
+    drop-shadow(0 1px 3px rgba(0, 0, 0, 0.9))
+    drop-shadow(0 0 2px rgba(180, 32, 22, 0.25)) !important;
+}
+
+/* Вертикальная рамка целей: высота ровно равна основной доске.
+   Ширина рассчитана по пропорциям повернутого PNG (839 × 1875). */
+.contract-goals-board {
+  position: absolute !important;
+  left: calc(100% + 0.65cqw) !important;
+  top: 0 !important;
+  width: 22.4% !important;
+  height: 100% !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  z-index: 5 !important;
+  overflow: visible !important;
+}
+
+.contract-goals-board-image {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: fill !important;
+  object-position: center !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  z-index: 1 !important;
+}
+
+/* Цели стоят напротив строк «Убийства» и «Чистая прибыль». */
+.contract-goals-board-values {
+  position: absolute !important;
+  left: 10% !important;
+  right: 10% !important;
+  top: 13% !important;
+  bottom: 13% !important;
+  display: grid !important;
+  grid-template-rows: repeat(4, minmax(0, 1fr)) !important;
+  align-items: stretch !important;
+  z-index: 2 !important;
+}
+
+.contract-goals-board-value {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+  color: #ead8b7 !important;
+  font-family: "PT Serif", Georgia, serif !important;
+  font-size: clamp(7px, 0.82cqw, 14px) !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.98),
+    0 0 5px rgba(0, 0, 0, 0.9) !important;
+}
+
+.contract-goals-board-kills {
+  grid-row: 1 !important;
+}
+
+.contract-goals-board-money {
+  grid-row: 4 !important;
+}
+
+@media (max-width: 1280px) {
+  .contract-side-board {
+    left: calc(100% + 8px) !important;
+    width: clamp(170px, 18vw, 230px) !important;
+  }
+}
+
+/* =========================================================
+   RESPONSIVE CANVAS — FIX FOR SMALLER / NON-16:9 MONITORS
+   The artwork is 1672 x 941. The whole interface is kept on
+   that coordinate plane and scaled uniformly to fit the screen.
+   This block intentionally overrides the old 1120px/650px
+   minimums and the viewport-based sizing from earlier patches.
+========================================================= */
+
+html,
+body,
+#root {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  margin: 0 !important;
+}
+
+body {
+  width: 100vw !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  overflow: hidden !important;
+  background: #080706 !important;
+}
+
+#root {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  overflow: hidden !important;
+  background: #080706 !important;
+}
+
+.app {
+  position: relative !important;
+  flex: 0 0 auto !important;
+
+  /* Fit the 1672:941 design canvas without stretching or cropping. */
+  width: min(100vw, 177.6833156vh) !important;
+  height: min(100vh, 56.2799vw) !important;
+  aspect-ratio: 1672 / 941 !important;
+
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+
+  margin: 0 !important;
+  overflow: hidden !important;
+  container-type: size;
+}
+
+/* Scale reel dimensions against the fitted canvas, not the physical viewport. */
+.roulette {
+  --rb-roulette-gap: 0.34cqh !important;
+  --rb-roulette-reel-height: 46.44cqh !important;
+  --rb-roulette-card-height: calc(
+    (var(--rb-roulette-reel-height) - (var(--rb-roulette-gap) * 4)) / 5
+  ) !important;
+}
+
+/* Typography follows the fitted canvas width. */
+.header .rank-control > .rank-input,
+.header .rank-control > .rank-input:focus,
+.header .rank-control > .rank-input:focus-visible {
+  font-size: clamp(10px, 1.45cqw, 25px) !important;
+}
+
+.header .difficulty-option > span {
+  font-size: clamp(9px, 1.10cqw, 20px) !important;
+}
+
+.header .language-toggle {
+  font-size: clamp(9px, 1.0cqw, 19px) !important;
+}
+
+.roulette-result-panel {
+  font-size: clamp(6px, 0.64cqw, 13px) !important;
+}
+
+.app-en .roulette-label {
+  font-size: clamp(6px, 0.66cqw, 12px) !important;
+}
+
+.guide-button {
+  width: clamp(28px, 4.9cqw, 82px) !important;
+}
+
+/* Contract progress: keep all ten levels visible and proportional. */
+.contract-progress {
+  left: clamp(12px, 2.2cqw, 42px) !important;
+  bottom: clamp(10px, 2.5cqh, 30px) !important;
+}
+
+.contract-progress-step {
+  flex-basis: clamp(24px, 3.6cqw, 69px) !important;
+  width: clamp(24px, 3.6cqw, 69px) !important;
+  height: clamp(24px, 3.6cqw, 69px) !important;
+  margin: 0 clamp(-16px, -0.83cqw, -8px) 0 0 !important;
+}
+
+.contract-progress-step > span {
+  font-size: clamp(7px, 0.68cqw, 13px) !important;
+}
+
+/* The switch and notice board scale with the same canvas as the rest. */
+.contract-mode-switch {
+  left: clamp(12px, 2.2cqw, 42px) !important;
+  bottom: calc(
+    clamp(10px, 2.5cqh, 30px) +
+    clamp(24px, 3.6cqw, 69px) - 30px
+  ) !important;
+  width: clamp(110px, 16cqw, 300px) !important;
+}
+
+.contract-side-board {
+  left: calc(100% + 0.5cqw) !important;
+  width: clamp(100px, 18cqw, 320px) !important;
+}
+
+.contract-goals-board {
+  left: calc(100% + 0.05cqw) !important;
+  width: 22.4% !important;
+  height: 100% !important;
+}
+
+/* Small-height media rules from earlier styles must not reintroduce a crop. */
+@media (max-height: 650px) {
+  .app {
+    height: min(100vh, 56.2799vw) !important;
+    min-height: 0 !important;
+  }
+}
+
+
+/* =========================================================
+   MEDIUM-SPEED, SMOOTH GOLDEN FRAME FLICKER — ASYNCHRONOUS PER SLOT
+   Faster than the long 10–21s cycles, slower than the original 2.7s pulse.
+   Only the transparent center-frame PNG is animated; item art is untouched.
+========================================================= */
+
+@keyframes rb-center-frame-medium-opacity {
+  0%, 100% { opacity: 0.91; }
+  16% { opacity: 0.98; }
+  32% { opacity: 0.94; }
+  49% { opacity: 1; }
+  66% { opacity: 0.89; }
+  83% { opacity: 0.97; }
+}
+
+@keyframes rb-center-frame-medium-glow {
+  0%, 100% {
+    filter:
+      brightness(0.96)
+      drop-shadow(0 0 1px rgba(255, 225, 150, 0.72))
+      drop-shadow(0 0 3px rgba(255, 184, 60, 0.38))
+      drop-shadow(0 0 7px rgba(208, 119, 28, 0.14));
+  }
+  21% {
+    filter:
+      brightness(1.06)
+      drop-shadow(0 0 2px rgba(255, 237, 184, 0.94))
+      drop-shadow(0 0 6px rgba(255, 196, 78, 0.68))
+      drop-shadow(0 0 11px rgba(224, 132, 31, 0.25));
+  }
+  43% {
+    filter:
+      brightness(0.94)
+      drop-shadow(0 0 1px rgba(255, 220, 140, 0.66))
+      drop-shadow(0 0 3px rgba(255, 176, 52, 0.32))
+      drop-shadow(0 0 7px rgba(208, 110, 24, 0.12));
+  }
+  63% {
+    filter:
+      brightness(1.11)
+      drop-shadow(0 0 2px rgba(255, 244, 205, 0.98))
+      drop-shadow(0 0 8px rgba(255, 203, 94, 0.82))
+      drop-shadow(0 0 14px rgba(232, 139, 34, 0.32));
+  }
+  82% {
+    filter:
+      brightness(0.98)
+      drop-shadow(0 0 1px rgba(255, 225, 150, 0.76))
+      drop-shadow(0 0 4px rgba(255, 184, 60, 0.42))
+      drop-shadow(0 0 8px rgba(208, 119, 28, 0.16));
+  }
+}
+
+/* The frame overlay is separate from the image inside each central cell. */
+.roulette .roulette-row .roulette-window > .roulette-center {
+  display: block !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: var(--rb-roulette-card-height) !important;
+  transform: translateY(-50%) !important;
+  border: 0 !important;
+  background-image: url("../Images/ui/hunt-selected-frame.png") !important;
+  background-position: center !important;
+  background-size: 100% 100% !important;
+  background-repeat: no-repeat !important;
+  background-color: transparent !important;
+  animation:
+    rb-center-frame-medium-opacity var(--rb-frame-opacity-time, 2.75s) ease-in-out infinite,
+    rb-center-frame-medium-glow var(--rb-frame-glow-time, 3.25s) ease-in-out infinite !important;
+  animation-delay:
+    var(--rb-frame-opacity-delay, 0s),
+    var(--rb-frame-glow-delay, 0s) !important;
+  will-change: filter, opacity;
+  pointer-events: none !important;
+  z-index: 6 !important;
+}
+
+/* Individual durations and negative phase offsets keep all 14 frames unsynchronised. */
+.roulette-row:nth-child(14n + 1) {
+  --rb-frame-opacity-time: 2.55s;
+  --rb-frame-opacity-delay: -1.4s;
+  --rb-frame-glow-time: 3.2s;
+  --rb-frame-glow-delay: -3.1s;
+}
+.roulette-row:nth-child(14n + 2) {
+  --rb-frame-opacity-time: 2.9s;
+  --rb-frame-opacity-delay: -4.2s;
+  --rb-frame-glow-time: 2.75s;
+  --rb-frame-glow-delay: -0.8s;
+}
+.roulette-row:nth-child(14n + 3) {
+  --rb-frame-opacity-time: 2.35s;
+  --rb-frame-opacity-delay: -2.2s;
+  --rb-frame-glow-time: 3.55s;
+  --rb-frame-glow-delay: -5.6s;
+}
+.roulette-row:nth-child(14n + 4) {
+  --rb-frame-opacity-time: 3.1s;
+  --rb-frame-opacity-delay: -5.1s;
+  --rb-frame-glow-time: 3s;
+  --rb-frame-glow-delay: -1.7s;
+}
+.roulette-row:nth-child(14n + 5) {
+  --rb-frame-opacity-time: 2.7s;
+  --rb-frame-opacity-delay: -0.6s;
+  --rb-frame-glow-time: 3.8s;
+  --rb-frame-glow-delay: -4.3s;
+}
+.roulette-row:nth-child(14n + 6) {
+  --rb-frame-opacity-time: 3.25s;
+  --rb-frame-opacity-delay: -3.7s;
+  --rb-frame-glow-time: 2.9s;
+  --rb-frame-glow-delay: -2.5s;
+}
+.roulette-row:nth-child(14n + 7) {
+  --rb-frame-opacity-time: 2.45s;
+  --rb-frame-opacity-delay: -1.9s;
+  --rb-frame-glow-time: 3.4s;
+  --rb-frame-glow-delay: -5.0s;
+}
+.roulette-row:nth-child(14n + 8) {
+  --rb-frame-opacity-time: 2.95s;
+  --rb-frame-opacity-delay: -4.8s;
+  --rb-frame-glow-time: 3.65s;
+  --rb-frame-glow-delay: -1.2s;
+}
+.roulette-row:nth-child(14n + 9) {
+  --rb-frame-opacity-time: 2.6s;
+  --rb-frame-opacity-delay: -2.9s;
+  --rb-frame-glow-time: 3.1s;
+  --rb-frame-glow-delay: -4.7s;
+}
+.roulette-row:nth-child(14n + 10) {
+  --rb-frame-opacity-time: 3.2s;
+  --rb-frame-opacity-delay: -5.5s;
+  --rb-frame-glow-time: 2.85s;
+  --rb-frame-glow-delay: -3.3s;
+}
+.roulette-row:nth-child(14n + 11) {
+  --rb-frame-opacity-time: 2.4s;
+  --rb-frame-opacity-delay: -0.9s;
+  --rb-frame-glow-time: 3.9s;
+  --rb-frame-glow-delay: -6.4s;
+}
+.roulette-row:nth-child(14n + 12) {
+  --rb-frame-opacity-time: 2.8s;
+  --rb-frame-opacity-delay: -3.5s;
+  --rb-frame-glow-time: 3.3s;
+  --rb-frame-glow-delay: -0.4s;
+}
+.roulette-row:nth-child(14n + 13) {
+  --rb-frame-opacity-time: 3.05s;
+  --rb-frame-opacity-delay: -2.6s;
+  --rb-frame-glow-time: 2.95s;
+  --rb-frame-glow-delay: -4.9s;
+}
+.roulette-row:nth-child(14n + 14) {
+  --rb-frame-opacity-time: 2.5s;
+  --rb-frame-opacity-delay: -4.1s;
+  --rb-frame-glow-time: 3.5s;
+  --rb-frame-glow-delay: -2.0s;
+}
+
+
+/* =========================================================
+   ПРАВАЯ ПЛАШКА ЦЕЛЕЙ: БЛИЖЕ К ОСНОВНОЙ ДОСКЕ И НИЖЕ
+   Цифры сохраняют прежнее вертикальное положение.
+========================================================= */
+.contract-goals-board {
+  left: calc(100% + 0.05cqw) !important;
+  top: 9% !important;
+  height: 82% !important;
+}
+
+.contract-goals-board-values {
+  top: 5% !important;
+  bottom: 5% !important;
+}
+
+/* Ручное положение правой плашки */
+.contract-side-board > .contract-goals-board {
+  transform: translateX(-25px) !important;
+}
+
+/* =========================================================
+   HUNT / REST ACTIVITY LIGHTS
+   The currently active mode receives a red glow.
+========================================================= */
+.contract-side-board-indicator {
+  transition: filter 220ms ease, opacity 220ms ease !important;
+}
+
+.contract-side-board-indicator.is-active {
+  filter:
+    brightness(1.45)
+    saturate(2.1)
+    drop-shadow(0 0 3px rgba(255, 45, 28, 1))
+    drop-shadow(0 0 8px rgba(255, 0, 0, 0.95))
+    drop-shadow(0 0 15px rgba(190, 0, 0, 0.78)) !important;
+  animation: hunt-activity-light-pulse 1.9s ease-in-out infinite !important;
+}
+
+@keyframes hunt-activity-light-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.78; }
+}
+
+
+/* Автоматические значения: использовано денег и чистая прибыль. */
+.contract-side-board-readonly {
+  justify-self: end !important;
+  width: 100% !important;
+  text-align: right !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+/* Чуть более широкая ячейка только для полей ручного ввода. */
+.contract-side-board-input-row {
+  grid-template-columns: minmax(0, 1fr) 24% !important;
+  column-gap: 2% !important;
+}
+
+/* Ручной ввод убийств и денег на основной доске статистики.
+   Постоянное затемнение обозначает область ввода даже без фокуса. */
+.contract-side-board-input {
+  display: block !important;
+  width: 100% !important;
+  height: 72% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 1px 3px !important;
+  border: 1px solid rgba(169, 138, 88, 0.42) !important;
+  border-radius: 2px !important;
+  outline: none !important;
+  background: rgba(4, 4, 3, 0.52) !important;
+  box-shadow:
+    inset 0 1px 5px rgba(0, 0, 0, 0.88),
+    0 0 2px rgba(0, 0, 0, 0.75) !important;
+  cursor: text !important;
+  pointer-events: auto !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  caret-color: #e1c48b !important;
+  z-index: 20 !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+}
+
+.contract-side-board-input:focus {
+  border-color: rgba(225, 196, 139, 0.82) !important;
+  background: rgba(3, 3, 2, 0.76) !important;
+  box-shadow:
+    inset 0 0 6px rgba(0, 0, 0, 0.96),
+    0 0 5px rgba(225, 196, 139, 0.34) !important;
+}
+
+.contract-side-board-input::selection {
+  color: #fff0d0 !important;
+  background: rgba(133, 91, 43, 0.85) !important;
+}
+
