@@ -5009,11 +5009,13 @@ body {
   }
 }
 
-/* The frame overlay is separate from the image inside each central cell. */
-.roulette .roulette-row .roulette-window > .roulette-center {
+/* The selector frame is a sibling of .roulette-window in the JSX,
+   not a child of it. Align its centre with the middle of the 5-card window. */
+.roulette .roulette-row > .roulette-center {
   display: block !important;
   position: absolute !important;
-  top: 50% !important;
+  /* label row (18.65%) + first gap (0.96%) + half of reel window (35.13%) */
+  top: 54.74% !important;
   left: 0 !important;
   width: 100% !important;
   height: var(--rb-roulette-card-height) !important;

@@ -12,15 +12,15 @@
           "stats": {
             "kills": 0,
             "money": 0,
-            "spent": 0,
-            "lastBuildCost": 0
+            "spent": 452,
+            "lastBuildCost": 452
           },
           "lifetimeStats": {
             "kills": 0,
             "money": 0,
-            "spent": 0
+            "spent": 1136
           },
-          "lastSeen": 1795874849189
+          "lastSeen": 1795875398595
         }
       }
     },
