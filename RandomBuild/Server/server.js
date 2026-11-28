@@ -33,6 +33,357 @@ app.use((req, res, next) => {
 });
 
 /* =========================================================
+ * SHARED RANDOMBUILD ROOMS + PLAYER STATISTICS
+ * One room contains one team with up to 3 players.
+ * All room members belong to team 1. The first player is the host.
+ * ========================================================= */
+
+const STATS_PORT = 3002;
+const STATS_SERVER_BUILD_ID = "RB-LIFETIME-DELTA-20261128-01";
+
+const STATS_FILE = path.join(__dirname, "randombuild-stats.json");
+const MAX_ROOM_PLAYERS = 3;
+
+const statsApp = express();
+statsApp.use(express.json({ limit: "100kb" }));
+statsApp.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && /^https?:\/\//i.test(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Vary", "Origin");
+  } else {
+    res.header("Access-Control-Allow-Origin", "*");
+  }
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
+
+// Диагностический endpoint: позволяет точно проверить, что порт 3002
+// обслуживает именно этот файл, а не старый оставшийся процесс Node.js.
+statsApp.get("/api/stats/version", (req, res) => {
+  return res.json({
+    ok: true,
+    build: STATS_SERVER_BUILD_ID,
+    lifetimeDelta: true,
+    lastBuildCost: true,
+  });
+});
+// Текущая статистика уровня. lastBuildCost нужен только для отображения
+// цены последнего сгенерированного билда в основном столбце.
+function emptySharedStats() {
+  return { kills: 0, money: 0, spent: 0, lastBuildCost: 0 };
+}
+
+function normaliseSharedStats(stats) {
+  return {
+    kills: Math.max(0, Math.floor(Number(stats?.kills) || 0)),
+    money: Math.max(0, Math.floor(Number(stats?.money) || 0)),
+    // spent — все расходы текущего уровня, участвующие в расчёте чистой прибыли.
+    spent: Math.max(0, Math.floor(Number(stats?.spent) || 0)),
+    // lastBuildCost — только последняя цена билда, которую видно в основном столбце.
+    lastBuildCost: Math.max(0, Math.floor(Number(stats?.lastBuildCost) || 0)),
+  };
+}
+
+// Накопительная статистика не содержит цену последнего билда:
+// она хранит только полные суммы за всё прохождение.
+function emptyLifetimeStats() {
+  return { kills: 0, money: 0, spent: 0 };
+}
+
+function normaliseLifetimeStats(stats) {
+  return {
+    kills: Math.max(0, Math.floor(Number(stats?.kills) || 0)),
+    money: Math.max(0, Math.floor(Number(stats?.money) || 0)),
+    spent: Math.max(0, Math.floor(Number(stats?.spent) || 0)),
+  };
+}
+
+// Для старых комнат без lifetimeStats используем текущие stats как стартовую базу.
+function normalisePlayerLifetimeStats(player) {
+  return normaliseLifetimeStats(player?.lifetimeStats ?? player?.stats);
+}
+
+function addSharedStats(baseStats, deltaStats) {
+  const base = normaliseLifetimeStats(baseStats);
+  const delta = normaliseLifetimeStats(deltaStats);
+  return {
+    kills: base.kills + delta.kills,
+    money: base.money + delta.money,
+    spent: base.spent + delta.spent,
+  };
+}
+
+function normaliseNickname(value) {
+  return String(value || "").trim().slice(0, 24);
+}
+
+function createEmptyRoomsState() {
+  return { rooms: {} };
+}
+
+function loadSharedStats() {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(STATS_FILE, "utf8"));
+    if (!parsed || typeof parsed !== "object") return createEmptyRoomsState();
+    if (parsed.rooms && typeof parsed.rooms === "object") return parsed;
+
+    // Старый формат автоматически переносим в отдельную комнату не делая его
+    // доступным по ключу: это только страховка для существующего локального файла.
+    return createEmptyRoomsState();
+  } catch {
+    return createEmptyRoomsState();
+  }
+}
+
+let sharedStatsState = loadSharedStats();
+
+function saveSharedStats() {
+  const tempPath = `${STATS_FILE}.tmp`;
+  try {
+    fs.writeFileSync(tempPath, JSON.stringify(sharedStatsState, null, 2), "utf8");
+    fs.renameSync(tempPath, STATS_FILE);
+  } catch (error) {
+    console.error("Не удалось сохранить статистику RandomBuild:", error);
+    try { if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath); } catch {}
+  }
+}
+
+function generateRoomCode() {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  do {
+    code = "RB-";
+    for (let i = 0; i < 5; i += 1) {
+      code += alphabet[crypto.randomInt(0, alphabet.length)];
+    }
+  } while (sharedStatsState.rooms[code]);
+  return code;
+}
+
+function publicRoom(room) {
+  const players = {};
+  for (const [slot, player] of Object.entries(room.players || {})) {
+    if (!player) continue;
+    players[slot] = {
+      slot: Number(slot),
+      team: Number(player.team),
+      nickname: player.nickname,
+      stats: normaliseSharedStats(player.stats),
+      lifetimeStats: normalisePlayerLifetimeStats(player),
+      lastSeen: Number(player.lastSeen) || 0,
+    };
+  }
+  return {
+    code: room.code,
+    hostToken: room.hostToken,
+    players,
+    maxPlayers: MAX_ROOM_PLAYERS,
+  };
+}
+
+function findPlayerByToken(token) {
+  if (!token) return null;
+  for (const room of Object.values(sharedStatsState.rooms)) {
+    for (const [slot, player] of Object.entries(room.players || {})) {
+      if (player && player.token === token) return { room, slot, player };
+    }
+  }
+  return null;
+}
+
+function nicknameAlreadyUsed(room, nickname, exceptToken = "") {
+  const normalized = normaliseNickname(nickname).toLocaleLowerCase();
+  if (!normalized) return false;
+  return Object.values(room.players || {}).some(
+    (player) => player && player.token !== exceptToken && player.nickname.toLocaleLowerCase() === normalized
+  );
+}
+
+function findRoom(code) {
+  const normalized = String(code || "").trim().toUpperCase();
+  return normalized ? sharedStatsState.rooms[normalized] || null : null;
+}
+
+function touchPlayer(found) {
+  if (found?.player) found.player.lastSeen = Date.now();
+}
+
+statsApp.post("/api/room/create", (req, res) => {
+  const nickname = normaliseNickname(req.body?.nickname);
+  if (!nickname) return res.status(400).json({ error: "Ник не может быть пустым." });
+
+  const roomCode = generateRoomCode();
+  const token = crypto.randomBytes(24).toString("hex");
+  const room = {
+    code: roomCode,
+    hostToken: token,
+    createdAt: Date.now(),
+    players: {},
+  };
+
+  room.players["1"] = {
+    token,
+    nickname,
+    team: 1,
+    stats: normaliseSharedStats(req.body?.legacyStats),
+    lifetimeStats: normaliseLifetimeStats(req.body?.legacyLifetimeStats ?? req.body?.legacyStats),
+    lastSeen: Date.now(),
+  };
+
+  sharedStatsState.rooms[roomCode] = room;
+  saveSharedStats();
+
+  return res.status(201).json({ token, player: publicRoom(room).players["1"], room: publicRoom(room) });
+});
+
+statsApp.post("/api/room/join", (req, res) => {
+  const nickname = normaliseNickname(req.body?.nickname);
+  const room = findRoom(req.body?.roomCode);
+  const token = String(req.body?.token || "").trim();
+
+  if (!nickname) return res.status(400).json({ error: "Ник не может быть пустым." });
+  if (!room) return res.status(404).json({ error: "Комната с таким ключом не найдена." });
+
+  // Повторное открытие браузера восстанавливает существующего игрока.
+  if (token) {
+    const existingSlot = Object.entries(room.players).find(([, player]) => player?.token === token);
+    if (existingSlot) {
+      const [slot, player] = existingSlot;
+      player.lastSeen = Date.now();
+      saveSharedStats();
+      return res.json({ token: player.token, player: publicRoom(room).players[slot], room: publicRoom(room) });
+    }
+  }
+
+  if (nicknameAlreadyUsed(room, nickname)) {
+    return res.status(409).json({ error: "Игрок с таким ником уже находится в этой комнате." });
+  }
+
+  const freeSlot = Array.from({ length: MAX_ROOM_PLAYERS }, (_, i) => String(i + 1)).find(
+    (slot) => !room.players[slot]
+  );
+
+  if (!freeSlot) return res.status(409).json({ error: "Команда уже заполнена. Максимум — 3 игрока." });
+
+  const nextToken = crypto.randomBytes(24).toString("hex");
+  const slotNumber = Number(freeSlot);
+  room.players[freeSlot] = {
+    token: nextToken,
+    nickname,
+    team: 1,
+    stats: normaliseSharedStats(req.body?.legacyStats),
+    lifetimeStats: normaliseLifetimeStats(req.body?.legacyLifetimeStats ?? req.body?.legacyStats),
+    lastSeen: Date.now(),
+  };
+
+  saveSharedStats();
+  return res.status(201).json({ token: nextToken, player: publicRoom(room).players[freeSlot], room: publicRoom(room) });
+});
+
+statsApp.post("/api/room/nickname", (req, res) => {
+  const token = String(req.body?.token || "").trim();
+  const nickname = normaliseNickname(req.body?.nickname);
+  const found = findPlayerByToken(token);
+
+  if (!nickname) return res.status(400).json({ error: "Ник не может быть пустым." });
+  if (!found) return res.status(401).json({ error: "Сессия игрока не найдена." });
+  if (nicknameAlreadyUsed(found.room, nickname, token)) {
+    return res.status(409).json({ error: "Игрок с таким ником уже находится в этой комнате." });
+  }
+
+  found.player.nickname = nickname;
+  touchPlayer(found);
+  saveSharedStats();
+
+  return res.json({
+    player: publicRoom(found.room).players[found.slot],
+    room: publicRoom(found.room),
+  });
+});
+
+statsApp.get("/api/room", (req, res) => {
+  const token = String(req.query?.token || "").trim();
+  const found = findPlayerByToken(token);
+  if (!found) return res.status(401).json({ error: "Сессия игрока не найдена." });
+  touchPlayer(found);
+  saveSharedStats();
+  return res.json({ player: publicRoom(found.room).players[found.slot], room: publicRoom(found.room) });
+});
+
+statsApp.post("/api/room/leave", (req, res) => {
+  const token = String(req.body?.token || "").trim();
+  const found = findPlayerByToken(token);
+  if (!found) return res.status(401).json({ error: "Сессия игрока не найдена." });
+
+  const wasHost = found.player.token === found.room.hostToken;
+  delete found.room.players[found.slot];
+
+  // Выход организатора не должен выкидывать остальных участников.
+  // Передаём право хоста следующему игроку по номеру слота.
+  const remainingPlayers = Object.entries(found.room.players || {})
+    .filter(([, player]) => Boolean(player))
+    .sort(([slotA], [slotB]) => Number(slotA) - Number(slotB));
+
+  if (remainingPlayers.length === 0) {
+    delete sharedStatsState.rooms[found.room.code];
+  } else if (wasHost) {
+    found.room.hostToken = remainingPlayers[0][1].token;
+  }
+
+  saveSharedStats();
+  return res.json({ ok: true });
+});
+
+statsApp.post("/api/stats/update", (req, res) => {
+  const token = String(req.body?.token || "").trim();
+  const found = findPlayerByToken(token);
+  if (!found) return res.status(401).json({ error: "Сессия игрока не найдена." });
+
+  if (!req.body?.stats || typeof req.body.stats !== "object") {
+    return res.status(400).json({ error: "Некорректные данные статистики." });
+  }
+
+  // Сохраняем прежний накопительный итог до замены прогресса текущего уровня.
+  // Приращения применяются на сервере и не могут быть затёрты сбросом уровня.
+  const previousLifetime = normalisePlayerLifetimeStats(found.player);
+  found.player.stats = normaliseSharedStats(req.body.stats);
+
+  if (req.body.resetLifetime === true) {
+    found.player.lifetimeStats = emptyLifetimeStats();
+  } else if (req.body.lifetimeDelta && typeof req.body.lifetimeDelta === "object") {
+    found.player.lifetimeStats = addSharedStats(previousLifetime, req.body.lifetimeDelta);
+  } else {
+    // Запрос, который меняет только показатели уровня, сохраняет накопительный итог.
+    // Полные клиентские снимки не принимаем: они могли бы затереть более свежие суммы.
+    found.player.lifetimeStats = previousLifetime;
+  }
+  touchPlayer(found);
+  saveSharedStats();
+
+  return res.json({ player: publicRoom(found.room).players[found.slot], room: publicRoom(found.room) });
+});
+
+statsApp.post("/api/stats/reset", (req, res) => {
+  const token = String(req.body?.token || "").trim();
+  const found = findPlayerByToken(token);
+  if (!found) return res.status(401).json({ error: "Сессия игрока не найдена." });
+
+  found.player.stats = emptySharedStats();
+  found.player.lifetimeStats = emptyLifetimeStats();
+  touchPlayer(found);
+  saveSharedStats();
+
+  return res.json({ player: publicRoom(found.room).players[found.slot], room: publicRoom(found.room) });
+});
+
+statsApp.listen(STATS_PORT, "0.0.0.0", () => {
+  console.log(`RandomBuild Room Server запущен: http://0.0.0.0:${STATS_PORT} [${STATS_SERVER_BUILD_ID}]`);
+});
+
+/* =========================================================
  * HUNT LOCAL LOG AUTO-DISCOVERY
  * Uses Windows/Steam local metadata only. No third-party API.
  * ========================================================= */

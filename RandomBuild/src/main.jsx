@@ -1582,10 +1582,102 @@ function calculateBuildCost(build) {
 
 const CONTRACT_PROGRESS_STORAGE_KEY = "randomBuildContractProgressV1";
 
+const PLAYER_SESSION_STORAGE_KEY = "randomBuildPlayerSessionV1";
+const PLAYER_NICKNAME_STORAGE_KEY = "randomBuildNicknameV1";
+const STATS_API_URL = `${window.location.protocol}//${window.location.hostname}:3002`;
+
+function loadPlayerSession() {
+  try {
+    const saved = JSON.parse(
+      localStorage.getItem(PLAYER_SESSION_STORAGE_KEY) || "null"
+    );
+
+    if (
+      !saved ||
+      typeof saved !== "object" ||
+      typeof saved.token !== "string" ||
+      !saved.token
+    ) {
+      return null;
+    }
+
+    return {
+      token: saved.token,
+      nickname: String(saved.nickname || "").trim(),
+      slot: Number(saved.slot) || 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function savePlayerSession(session) {
+  try {
+    localStorage.setItem(
+      PLAYER_SESSION_STORAGE_KEY,
+      JSON.stringify(session)
+    );
+  } catch (error) {
+    console.warn("Не удалось сохранить сессию игрока:", error);
+  }
+}
+
+function loadSavedPlayerNickname() {
+  try {
+    const session = loadPlayerSession();
+    return String(
+      session?.nickname || localStorage.getItem(PLAYER_NICKNAME_STORAGE_KEY) || ""
+    ).trim().slice(0, 24);
+  } catch {
+    return "";
+  }
+}
+
+function normalisePlayerStats(stats) {
+  return {
+    kills: Math.max(0, Math.floor(Number(stats?.kills) || 0)),
+    money: Math.max(0, Math.floor(Number(stats?.money) || 0)),
+    // spent — все расходы, накопленные внутри текущего уровня.
+    spent: Math.max(0, Math.floor(Number(stats?.spent) || 0)),
+    // lastBuildCost — стоимость последнего билда; показывается в основной таблице.
+    lastBuildCost: Math.max(0, Math.floor(Number(stats?.lastBuildCost) || 0)),
+  };
+}
+
+function normalisePlayerLifetimeStats(stats) {
+  return {
+    kills: Math.max(0, Math.floor(Number(stats?.kills) || 0)),
+    money: Math.max(0, Math.floor(Number(stats?.money) || 0)),
+    spent: Math.max(0, Math.floor(Number(stats?.spent) || 0)),
+  };
+}
+
+function emptyPlayerStats() {
+  return { kills: 0, money: 0, spent: 0, lastBuildCost: 0 };
+}
+
+function emptyPlayerLifetimeStats() {
+  return { kills: 0, money: 0, spent: 0 };
+}
+
+function getPlayerStatsFromList(players, slot) {
+  const player = players?.[String(slot)];
+  return player ? normalisePlayerStats(player.stats) : emptyPlayerStats();
+}
+
+function getPlayerLifetimeStatsFromList(players, slot) {
+  const player = players?.[String(slot)];
+  return player
+    ? normalisePlayerLifetimeStats(player.lifetimeStats ?? player.stats)
+    : emptyPlayerLifetimeStats();
+}
+
+
 function loadContractProgress() {
   const fallback = {
     level: 1,
-    progress: { kills: 0, money: 0, spent: 0 },
+    progress: emptyPlayerStats(),
+    lifetimeStats: emptyPlayerLifetimeStats(),
   };
 
   try {
@@ -1601,6 +1693,9 @@ function loadContractProgress() {
     const kills = Number(saved.progress?.kills);
     const money = Number(saved.progress?.money);
     const spent = Number(saved.progress?.spent);
+    const lastBuildCost = Number(saved.progress?.lastBuildCost);
+
+    const savedLifetime = saved.lifetimeStats || saved.progress || {};
 
     return {
       level: Number.isInteger(level) && level >= 1 && level <= 10
@@ -1610,12 +1705,203 @@ function loadContractProgress() {
         kills: Number.isFinite(kills) ? Math.max(0, Math.floor(kills)) : 0,
         money: Number.isFinite(money) ? Math.max(0, Math.floor(money)) : 0,
         spent: Number.isFinite(spent) ? Math.max(0, Math.floor(spent)) : 0,
+        lastBuildCost: Number.isFinite(lastBuildCost) ? Math.max(0, Math.floor(lastBuildCost)) : 0,
       },
+      // Миграция старого localStorage: текущие значения становятся стартовой базой.
+      lifetimeStats: normalisePlayerLifetimeStats(savedLifetime),
     };
   } catch (error) {
     console.warn("Не удалось прочитать сохранённый прогресс контракта:", error);
     return fallback;
   }
+}
+
+
+function PlayerStatBoard({
+  slot,
+  nickname,
+  stats,
+  lifetimeStats,
+  showLifetime = false,
+  editable,
+  language,
+  drafts,
+  onDraftChange,
+  onCommit,
+  contractLevel = 1,
+  activityEvent = "none",
+}) {
+  const locale = language === "ru" ? "ru-RU" : "en-US";
+  const safeStats = normalisePlayerStats(stats);
+  const net = safeStats.money - safeStats.spent;
+  const safeLifetimeStats = normalisePlayerLifetimeStats(lifetimeStats);
+  const lifetimeNet = safeLifetimeStats.money - safeLifetimeStats.spent;
+
+  return (
+    <div
+      className={`contract-side-board player-stat-board contract-side-board-player-${slot}`}
+      data-player-slot={slot}
+      data-last-log-event={activityEvent}
+      role="group"
+      aria-label={
+        language === "ru"
+          ? `Статистика игрока ${slot}`
+          : `Player ${slot} statistics`
+      }
+    >
+      <img
+        className="contract-side-board-image"
+        src={
+          language === "en"
+            ? new URL(
+                "../Images/ui/contract-side-board-en.png",
+                import.meta.url
+              ).href
+            : new URL(
+                "../Images/ui/contract-side-board.png",
+                import.meta.url
+              ).href
+        }
+        alt=""
+        aria-hidden="true"
+      />
+
+      <div className="player-stat-board-name" title={nickname || `Player ${slot}`}>
+        {nickname || (language === "ru" ? `Игрок ${slot}` : `Player ${slot}`)}
+      </div>
+
+      <div className="contract-side-board-indicators">
+        <div className="contract-side-board-row contract-side-board-input-row">
+          {editable ? (
+            <input
+              className="contract-side-board-value contract-side-board-input"
+              data-stat="kills"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={12}
+              value={drafts.kills}
+              onChange={(event) => onDraftChange("kills", event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  onCommit("kills");
+                  event.currentTarget.blur();
+                }
+              }}
+              aria-label={
+                language === "ru" ? "Количество убийств" : "Kill count"
+              }
+              title={
+                language === "ru"
+                  ? "Введите количество убийств"
+                  : "Enter kill count"
+              }
+              autoComplete="off"
+              spellCheck={false}
+            />
+          ) : (
+            <span
+              className="contract-side-board-value contract-side-board-readonly"
+              data-stat="kills"
+            >
+              {safeStats.kills.toLocaleString(locale)}
+            </span>
+          )}
+        </div>
+
+        <div className="contract-side-board-row">
+          <span
+            className="contract-side-board-value contract-side-board-readonly"
+            data-stat="spent"
+          >
+            {safeStats.lastBuildCost.toLocaleString(locale)}
+          </span>
+        </div>
+
+        <div className="contract-side-board-row contract-side-board-input-row">
+          {editable ? (
+            <input
+              className="contract-side-board-value contract-side-board-input"
+              data-stat="money"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={12}
+              value={drafts.money}
+              onChange={(event) => onDraftChange("money", event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  onCommit("money");
+                  event.currentTarget.blur();
+                }
+              }}
+              aria-label={
+                language === "ru" ? "Заработано денег" : "Money earned"
+              }
+              title={
+                language === "ru"
+                  ? "Введите заработанную сумму"
+                  : "Enter money earned"
+              }
+              autoComplete="off"
+              spellCheck={false}
+            />
+          ) : (
+            <span
+              className="contract-side-board-value contract-side-board-readonly"
+              data-stat="money"
+            >
+              {safeStats.money.toLocaleString(locale)}
+            </span>
+          )}
+        </div>
+
+        <div className="contract-side-board-row">
+          <span
+            className="contract-side-board-value contract-side-board-readonly"
+            data-stat="net"
+          >
+            {net.toLocaleString(locale)}
+          </span>
+        </div>
+      </div>
+
+      {/* Правая узкая табличка показывает накопительную статистику
+          текущего пользователя. Значения сохраняются при смене уровня. */}
+      {showLifetime && (
+        <div
+          className="contract-goals-board"
+          role="group"
+          aria-label={language === "ru" ? "Накопительная статистика" : "Lifetime statistics"}
+        >
+          <img
+            className="contract-goals-board-image"
+            src={getUiPng("contract-goals-board-vertical.png")}
+            alt=""
+            aria-hidden="true"
+            draggable={false}
+          />
+          <div className="contract-goals-board-values">
+            <span className="contract-goals-board-total" data-total="kills">
+              {safeLifetimeStats.kills.toLocaleString(locale)}
+            </span>
+            <span className="contract-goals-board-total" data-total="spent">
+              {safeLifetimeStats.spent.toLocaleString(locale)}
+            </span>
+            <span className="contract-goals-board-total" data-total="money">
+              {safeLifetimeStats.money.toLocaleString(locale)}
+            </span>
+            <span className="contract-goals-board-total" data-total="net">
+              {lifetimeNet.toLocaleString(locale)}
+            </span>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
 }
 
 function App() {
@@ -1639,6 +1925,20 @@ const [isGuideOpen, setIsGuideOpen] =
 const [savedContractState] = useState(() => loadContractProgress());
 const [contractLevel, setContractLevel] = useState(savedContractState.level);
 const [contractProgress, setContractProgress] = useState(savedContractState.progress);
+const [contractLifetimeStats, setContractLifetimeStats] = useState(
+  savedContractState.lifetimeStats || normalisePlayerLifetimeStats(savedContractState.progress)
+);
+// Синхронный источник накопительных значений: обновляется до постановки API-запроса в очередь.
+const contractLifetimeStatsRef = React.useRef(
+  normalisePlayerLifetimeStats(savedContractState.lifetimeStats || savedContractState.progress)
+);
+
+function replaceContractLifetimeStats(nextStats) {
+  const normalized = normalisePlayerLifetimeStats(nextStats);
+  contractLifetimeStatsRef.current = normalized;
+  setContractLifetimeStats(normalized);
+}
+
 const [contractStatDrafts, setContractStatDrafts] = useState({
   kills: "",
   money: "",
@@ -1653,6 +1953,243 @@ const lastHuntLogEventSeqRef = React.useRef(0);
 const [contractModeOn, setContractModeOn] = useState(false);
 const [lockedContractLevel, setLockedContractLevel] = useState(savedContractState.level);
 
+// Общая статистика трёх игроков. Сервер является источником истины,
+// localStorage хранит только сессию браузера и локальный кэш текущего игрока.
+const [playerSession, setPlayerSession] = useState(() => loadPlayerSession());
+const [nicknameDraft, setNicknameDraft] = useState(() => loadSavedPlayerNickname());
+const [roomCodeDraft, setRoomCodeDraft] = useState("");
+const [roomConnectionOpen, setRoomConnectionOpen] = useState(false);
+const [registrationError, setRegistrationError] = useState("");
+const [nicknameSaveError, setNicknameSaveError] = useState("");
+const [statsServerReady, setStatsServerReady] = useState(false);
+const [sharedPlayers, setSharedPlayers] = useState({});
+const [roomInfo, setRoomInfo] = useState(null);
+
+// Serializes this player's writes and prevents an older room poll from
+// overwriting a just-entered value before the server finishes saving it.
+const statsSyncQueueRef = React.useRef(Promise.resolve());
+const statsSyncRequestIdRef = React.useRef(0);
+const statsSyncPendingRef = React.useRef(0);
+
+const currentPlayerSlot = playerSession?.slot || 0;
+const currentPlayerNickname = playerSession?.nickname || "";
+const roomPlayers = roomInfo?.players || {};
+const sortedRoomPlayers = Object.values(roomPlayers)
+  .filter(Boolean)
+  .sort((a, b) => Number(a.slot) - Number(b.slot));
+const localRoomPlayer = currentPlayerSlot
+  ? sortedRoomPlayers.find((player) => Number(player.slot) === Number(currentPlayerSlot))
+  : null;
+// В локальном интерфейсе каждый участник видит себя в первом слоте.
+// Номера слотов на сервере не меняются — статистика остаётся привязана к владельцу.
+const roomPlayersForLocalView = localRoomPlayer
+  ? [localRoomPlayer, ...sortedRoomPlayers.filter((player) => player !== localRoomPlayer)]
+  : sortedRoomPlayers;
+const roomPlayerCount = Object.keys(roomPlayers).length;
+const isInRoom = Boolean(playerSession?.token);
+// При одном участнике кнопка позволяет перейти в другую комнату.
+// При двух или трёх участниках действие меняется на выход из комнаты.
+const canOpenRoomConnection = !isInRoom || roomPlayerCount <= 1;
+
+useEffect(() => {
+  // Если во время открытой формы в комнату вошёл второй игрок,
+  // закрываем форму: теперь основное действие — выход из комнаты.
+  if (!canOpenRoomConnection && roomConnectionOpen) {
+    setRoomConnectionOpen(false);
+    setRoomCodeDraft("");
+    setRegistrationError("");
+  }
+}, [canOpenRoomConnection, roomConnectionOpen]);
+
+function updateNicknameDraft(value) {
+  const nextNickname = String(value ?? "").slice(0, 24);
+  setNicknameDraft(nextNickname);
+  setNicknameSaveError("");
+  try {
+    localStorage.setItem(PLAYER_NICKNAME_STORAGE_KEY, nextNickname);
+  } catch (error) {
+    console.warn("Не удалось сохранить ник игрока:", error);
+  }
+}
+
+async function savePlayerNickname() {
+  if (!playerSession?.token) return;
+
+  const nickname = String(nicknameDraft || "").trim().slice(0, 24);
+  const previousNickname = String(playerSession.nickname || "").trim();
+
+  if (!nickname) {
+    updateNicknameDraft(previousNickname);
+    setNicknameSaveError(language === "ru" ? "Ник не может быть пустым." : "Nickname cannot be empty.");
+    return;
+  }
+
+  if (nickname === previousNickname) return;
+
+  // Сразу обновляем собственный слот локально, чтобы новое имя было видно
+  // без задержки, пока сервер сохраняет изменение для остальных участников.
+  const previousSession = playerSession;
+  const optimisticSession = { ...previousSession, nickname };
+  setPlayerSession(optimisticSession);
+  savePlayerSession(optimisticSession);
+  setSharedPlayers((current) => ({
+    ...current,
+    [String(currentPlayerSlot)]: {
+      ...(current[String(currentPlayerSlot)] || {}),
+      slot: currentPlayerSlot,
+      nickname,
+    },
+  }));
+
+  try {
+    const response = await fetch(`${STATS_API_URL}/api/room/nickname`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: previousSession.token, nickname }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data?.error || `HTTP ${response.status}`);
+    }
+
+    // Если за время запроса игрок уже вышел или перешёл в другую комнату,
+    // не перезаписываем новую сессию ответом от старой.
+    if (loadPlayerSession()?.token !== previousSession.token) return;
+
+    const confirmedNickname = String(data?.player?.nickname || nickname).trim();
+    const confirmedSession = {
+      ...optimisticSession,
+      nickname: confirmedNickname,
+      slot: Number(data?.player?.slot) || currentPlayerSlot,
+    };
+    savePlayerSession(confirmedSession);
+    setPlayerSession(confirmedSession);
+    updateNicknameDraft(confirmedNickname);
+
+    if (data?.room) {
+      setRoomInfo(data.room);
+      setSharedPlayers(data.room.players || {});
+    }
+    setNicknameSaveError("");
+  } catch (error) {
+    console.error("Не удалось обновить ник игрока:", error);
+    if (loadPlayerSession()?.token !== previousSession.token) return;
+    const restoredSession = { ...previousSession, nickname: previousNickname };
+    savePlayerSession(restoredSession);
+    setPlayerSession(restoredSession);
+    updateNicknameDraft(previousNickname);
+    setSharedPlayers((current) => ({
+      ...current,
+      [String(currentPlayerSlot)]: {
+        ...(current[String(currentPlayerSlot)] || {}),
+        slot: currentPlayerSlot,
+        nickname: previousNickname,
+      },
+    }));
+    setNicknameSaveError(error?.message || (language === "ru" ? "Не удалось сохранить ник." : "Could not save nickname."));
+  }
+}
+
+function syncCurrentPlayerStats(nextStats, lifetimeDelta = {}, options = {}) {
+  const normalized = normalisePlayerStats(nextStats);
+  const normalizedDelta = normalisePlayerLifetimeStats(lifetimeDelta);
+  const previousLifetime = normalisePlayerLifetimeStats(contractLifetimeStatsRef.current);
+  const normalizedLifetime = options.resetLifetime
+    ? emptyPlayerLifetimeStats()
+    : {
+        kills: previousLifetime.kills + normalizedDelta.kills,
+        money: previousLifetime.money + normalizedDelta.money,
+        spent: previousLifetime.spent + normalizedDelta.spent,
+      };
+
+  // Обновляем ref немедленно: последующий сброс уровня не сможет взять старый снимок.
+  contractLifetimeStatsRef.current = normalizedLifetime;
+  setContractProgress(normalized);
+  setContractLifetimeStats(normalizedLifetime);
+  setSharedPlayers((current) => ({
+    ...current,
+    [String(currentPlayerSlot || 1)]: {
+      ...(current[String(currentPlayerSlot || 1)] || {}),
+      slot: currentPlayerSlot || 1,
+      nickname: currentPlayerNickname,
+      stats: normalized,
+      lifetimeStats: normalizedLifetime,
+    },
+  }));
+
+  if (!playerSession?.token || !currentPlayerSlot) return;
+
+  const requestId = ++statsSyncRequestIdRef.current;
+  statsSyncPendingRef.current += 1;
+
+  statsSyncQueueRef.current = statsSyncQueueRef.current
+    .catch(() => {})
+    .then(async () => {
+      const response = await fetch(`${STATS_API_URL}/api/stats/update`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: playerSession.token,
+          stats: normalized,
+          lifetimeDelta: normalizedDelta,
+          resetLifetime: Boolean(options.resetLifetime),
+        }),
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.json();
+    })
+    .then((data) => {
+      if (requestId !== statsSyncRequestIdRef.current) return;
+      if (data?.room) {
+        setRoomInfo(data.room);
+        setSharedPlayers(data.room.players || {});
+      }
+      if (data?.player) {
+        replaceContractLifetimeStats(data.player.lifetimeStats ?? normalizedLifetime);
+      }
+      setStatsServerReady(true);
+    })
+    .catch((error) => {
+      if (requestId === statsSyncRequestIdRef.current) {
+        console.warn("Не удалось синхронизировать статистику:", error);
+        setStatsServerReady(false);
+      }
+    })
+    .finally(() => {
+      statsSyncPendingRef.current = Math.max(0, statsSyncPendingRef.current - 1);
+    });
+}
+
+function getDisplayedPlayerStats(slot) {
+  if (
+    (slot === currentPlayerSlot && currentPlayerSlot) ||
+    (!currentPlayerSlot && slot === 1)
+  ) {
+    return normalisePlayerStats(contractProgress);
+  }
+
+  return getPlayerStatsFromList(sharedPlayers, slot);
+}
+
+function getDisplayedPlayerLifetimeStats(slot) {
+  if (
+    (slot === currentPlayerSlot && currentPlayerSlot) ||
+    (!currentPlayerSlot && slot === 1)
+  ) {
+    return normalisePlayerLifetimeStats(contractLifetimeStats);
+  }
+
+  return getPlayerLifetimeStatsFromList(sharedPlayers, slot);
+}
+
+function getDisplayedPlayerNickname(slot) {
+  if (Number(slot) === Number(currentPlayerSlot) && currentPlayerSlot) {
+    return String(nicknameDraft || "").trim();
+  }
+  return String(sharedPlayers?.[String(slot)]?.nickname || "").trim();
+}
+
+
 // Состояние Hunt для двух индикаторов доски: hunt / rest / offline / unknown.
 const [huntActivity, setHuntActivity] = useState("unknown");
 
@@ -1663,12 +2200,242 @@ useEffect(() => {
       JSON.stringify({
         level: contractLevel,
         progress: contractProgress,
+        lifetimeStats: contractLifetimeStats,
       })
     );
   } catch (error) {
     console.warn("Не удалось сохранить прогресс контракта:", error);
   }
-}, [contractLevel, contractProgress]);
+}, [contractLevel, contractProgress, contractLifetimeStats]);
+
+// Комната и игрок восстанавливаются после обновления страницы.
+useEffect(() => {
+  if (!playerSession?.token) return;
+
+  let active = true;
+
+  async function refreshRoom() {
+    const syncRequestIdAtStart = statsSyncRequestIdRef.current;
+    const hadPendingStatsSyncAtStart = statsSyncPendingRef.current > 0;
+
+    try {
+      const response = await fetch(
+        `${STATS_API_URL}/api/room?token=${encodeURIComponent(playerSession.token)}`,
+        { cache: "no-store" }
+      );
+
+      if (response.status === 401) {
+        localStorage.removeItem(PLAYER_SESSION_STORAGE_KEY);
+        if (active) {
+          setPlayerSession(null);
+          setSharedPlayers({});
+          setRoomInfo(null);
+          setStatsServerReady(false);
+        }
+        return;
+      }
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+
+      if (!active) return;
+
+      if (data?.room) {
+        setRoomInfo(data.room);
+        setSharedPlayers(data.room.players || {});
+      }
+
+      if (data?.player) {
+        const serverSession = {
+          token: playerSession.token,
+          nickname: data.player.nickname,
+          slot: Number(data.player.slot),
+          roomCode: data.room?.code || playerSession.roomCode || "",
+          isHost: data.room?.hostToken === playerSession.token,
+        };
+        setPlayerSession(serverSession);
+        savePlayerSession(serverSession);
+
+        // Не позволяем ответу старого опроса затереть локальный ввод
+        // или данные, которые ещё находятся в очереди на сохранение.
+        if (
+          !hadPendingStatsSyncAtStart &&
+          syncRequestIdAtStart === statsSyncRequestIdRef.current &&
+          statsSyncPendingRef.current === 0
+        ) {
+          setContractProgress(normalisePlayerStats(data.player.stats));
+          replaceContractLifetimeStats(data.player.lifetimeStats ?? data.player.stats);
+        }
+      }
+
+      setStatsServerReady(true);
+    } catch (error) {
+      if (active) {
+        console.warn("Не удалось получить комнату RandomBuild:", error);
+        setStatsServerReady(false);
+      }
+    }
+  }
+
+  refreshRoom();
+  const intervalId = window.setInterval(refreshRoom, 1000);
+  return () => {
+    active = false;
+    window.clearInterval(intervalId);
+  };
+}, [playerSession?.token]);
+
+async function createRoom() {
+  const nickname = String(nicknameDraft || playerSession?.nickname || "").trim().slice(0, 24);
+  const previousToken = String(playerSession?.token || "").trim();
+  if (!nickname) {
+    setRegistrationError(language === "ru" ? "Введите ник." : "Enter your nickname.");
+    return;
+  }
+
+  setRegistrationError("");
+  try {
+    const response = await fetch(`${STATS_API_URL}/api/room/create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nickname,
+        legacyStats: contractProgress,
+        legacyLifetimeStats: contractLifetimeStats,
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data?.error || `HTTP ${response.status}`);
+
+    // При создании новой комнаты из одиночной старой комнаты
+    // освобождаем прежнюю сессию только после успешного создания.
+    if (previousToken) {
+      fetch(`${STATS_API_URL}/api/room/leave`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: previousToken }),
+        keepalive: true,
+      }).catch((leaveError) => {
+        console.warn("Не удалось покинуть предыдущую комнату:", leaveError);
+      });
+    }
+
+    const nextSession = {
+      token: data.token,
+      nickname: data.player.nickname,
+      slot: Number(data.player.slot),
+      roomCode: data.room.code,
+      isHost: true,
+    };
+    savePlayerSession(nextSession);
+    setPlayerSession(nextSession);
+    setRoomInfo(data.room);
+    setSharedPlayers(data.room.players || {});
+    setContractProgress(normalisePlayerStats(data.player.stats));
+    replaceContractLifetimeStats(data.player.lifetimeStats ?? data.player.stats);
+    updateNicknameDraft(data.player.nickname || nickname);
+    setRoomCodeDraft("");
+    setRoomConnectionOpen(false);
+    setRegistrationError("");
+    setStatsServerReady(true);
+  } catch (error) {
+    console.error("Не удалось создать комнату:", error);
+    setRegistrationError(error?.message || (language === "ru" ? "Не удалось создать комнату." : "Could not create room."));
+  }
+}
+
+async function joinRoom() {
+  const nickname = String(nicknameDraft || playerSession?.nickname || "").trim().slice(0, 24);
+  const roomCode = String(roomCodeDraft || "").trim().toUpperCase();
+  const previousToken = String(playerSession?.token || "").trim();
+  const previousRoomCode = String(playerSession?.roomCode || "").trim().toUpperCase();
+
+  if (!nickname) {
+    setRegistrationError(language === "ru" ? "Введите ник." : "Enter your nickname.");
+    return;
+  }
+  if (!roomCode) {
+    setRegistrationError(language === "ru" ? "Введите ключ комнаты." : "Enter the room key.");
+    return;
+  }
+  if (previousToken && previousRoomCode && previousRoomCode === roomCode) {
+    setRegistrationError(language === "ru" ? "Вы уже находитесь в этой комнате." : "You are already in this room.");
+    return;
+  }
+
+  setRegistrationError("");
+  try {
+    // Сначала пытаемся войти в новую комнату без старого токена.
+    // Старую комнату покидаем только после успешного подключения,
+    // чтобы неверный ключ не лишил игрока текущей комнаты.
+    const response = await fetch(`${STATS_API_URL}/api/room/join`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        roomCode,
+        nickname,
+        token: null,
+        legacyStats: contractProgress,
+        legacyLifetimeStats: contractLifetimeStats,
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data?.error || `HTTP ${response.status}`);
+
+    if (previousToken) {
+      fetch(`${STATS_API_URL}/api/room/leave`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: previousToken }),
+        keepalive: true,
+      }).catch((leaveError) => {
+        console.warn("Не удалось покинуть предыдущую комнату:", leaveError);
+      });
+    }
+
+    const nextSession = {
+      token: data.token,
+      nickname: data.player.nickname,
+      slot: Number(data.player.slot),
+      roomCode: data.room.code,
+      isHost: data.room.hostToken === data.token,
+    };
+    savePlayerSession(nextSession);
+    setPlayerSession(nextSession);
+    setRoomInfo(data.room);
+    setSharedPlayers(data.room.players || {});
+    setContractProgress(normalisePlayerStats(data.player.stats));
+    replaceContractLifetimeStats(data.player.lifetimeStats ?? data.player.stats);
+    updateNicknameDraft(data.player.nickname || nickname);
+    setRoomCodeDraft("");
+    setRoomConnectionOpen(false);
+    setRegistrationError("");
+    setStatsServerReady(true);
+  } catch (error) {
+    console.error("Не удалось подключиться к комнате:", error);
+    setRegistrationError(error?.message || (language === "ru" ? "Не удалось подключиться к комнате." : "Could not join room."));
+  }
+}
+
+function leaveRoom() {
+  if (!playerSession?.token) return;
+  const savedNickname = playerSession.nickname || nicknameDraft;
+  fetch(`${STATS_API_URL}/api/room/leave`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: playerSession.token }),
+    keepalive: true,
+  }).catch(() => {});
+  localStorage.removeItem(PLAYER_SESSION_STORAGE_KEY);
+  setPlayerSession(null);
+  setRoomInfo(null);
+  setSharedPlayers({});
+  setStatsServerReady(false);
+  updateNicknameDraft(savedNickname);
+  setRoomCodeDraft("");
+  setRoomConnectionOpen(false);
+  setRegistrationError("");
+}
 
 // Автоматическое повышение работает в режиме ON.
 // После выполнения обеих целей уровень повышается на 1, а счётчики нового уровня сбрасываются.
@@ -1697,8 +2464,8 @@ useEffect(() => {
 
   setContractLevel(nextLevel);
   setLockedContractLevel(nextLevel);
-  setContractProgress({ kills: 0, money: 0, spent: 0 });
   setContractStatDrafts({ kills: "", money: "" });
+  syncCurrentPlayerStats(emptyPlayerStats());
 }, [contractModeOn, contractLevel, contractProgress]);
 
 // Убийства и заработанные деньги вводятся вручную. Расходы и чистая прибыль считаются автоматически.
@@ -1737,31 +2504,44 @@ function commitContractStat(stat) {
     ? contractLevel * 2
     : contractLevel * 2000;
 
-  setContractProgress((current) => {
-    const currentValue = Math.max(0, Number(current[stat]) || 0);
+  const current = normalisePlayerStats(contractProgress);
+  const currentValue = Math.max(0, Number(current[stat]) || 0);
 
-    // Убийства ограничиваем самой целью.
-    // Деньги ограничиваем только суммой «цель + расходы»:
-    // иначе после первого ввода общий заработок может достичь gross-цели,
-    // но чистая прибыль останется ниже неё из-за стоимости билдов,
-    // и последующие вводы будут ошибочно отбрасываться.
-    const maxAllowed = stat === "kills"
-      ? goal
-      : goal + Math.max(0, Number(current.spent) || 0);
+  // Убийства ограничиваем самой целью.
+  // Деньги ограничиваем только суммой «цель + расходы».
+  const maxAllowed = stat === "kills"
+    ? goal
+    : goal + Math.max(0, Number(current.spent) || 0);
 
-    return {
-      ...current,
-      [stat]: Math.min(maxAllowed, currentValue + value),
-    };
-  });
-  setContractStatDrafts((current) => ({
+  const acceptedForCurrentLevel = Math.min(
+    value,
+    Math.max(0, maxAllowed - currentValue)
+  );
+
+  const nextProgress = {
     ...current,
+    [stat]: currentValue + acceptedForCurrentLevel,
+  };
+
+  // В накопительную статистику целиком передаётся введённая сумма,
+  // включая превышение цели текущего уровня.
+  syncCurrentPlayerStats(nextProgress, { [stat]: value });
+
+  setContractStatDrafts((currentDrafts) => ({
+    ...currentDrafts,
     [stat]: "",
   }));
 }
 
+// Смена уровня очищает только текущие показатели. Накопительные суммы сохраняются.
 function resetContractProgress() {
-  setContractProgress({ kills: 0, money: 0, spent: 0 });
+  syncCurrentPlayerStats(emptyPlayerStats());
+  setContractStatDrafts({ kills: "", money: "" });
+}
+
+// Полный сброс очищает и прогресс уровня, и накопительную статистику игрока.
+function resetAllContractStats() {
+  syncCurrentPlayerStats(emptyPlayerStats(), {}, { resetLifetime: true });
   setContractStatDrafts({ kills: "", money: "" });
 }
 
@@ -2323,14 +3103,23 @@ useEffect(() => {
 
       const newBuildCost = calculateBuildCost(newBuild);
 
-      // OFF: стоимость нового билда заменяет предыдущую.
-      // ON: стоимость каждой новой генерации на текущем уровне накапливается.
-      setContractProgress((current) => ({
-        ...current,
-        spent: contractModeOn
-          ? (Number(current.spent) || 0) + newBuildCost
-          : newBuildCost,
-      }));
+      // В текущем уровне сохраняем прежнюю логику ON/OFF.
+      // В накопительную статистику добавляем стоимость каждого сгенерированного билда.
+      const currentLevelStats = normalisePlayerStats(contractProgress);
+      syncCurrentPlayerStats(
+        {
+          ...currentLevelStats,
+          // В ON суммарные расходы уровня нужны для расчёта чистой прибыли.
+          // В OFF сохраняем прежнее поведение ручного режима.
+          spent: contractModeOn
+            ? currentLevelStats.spent + newBuildCost
+            : newBuildCost,
+          // В основной таблице показывается цена последнего билда,
+          // а не сумма всех билдов уровня.
+          lastBuildCost: newBuildCost,
+        },
+        { spent: newBuildCost }
+      );
 
       /*
        * Сначала создаём весь набор строк.
@@ -2558,7 +3347,76 @@ await sleep(
   <span className={`language-choice ${language === "en" ? "is-active" : ""}`}>EN</span>
 </button>
 
-        
+        <img
+          className="player-nickname-field-art"
+          src={getUiPng("player-nickname-field.png")}
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+        />
+
+        <input
+          className="player-nickname-input"
+          type="text"
+          maxLength={24}
+          value={nicknameDraft}
+          onChange={(event) => updateNicknameDraft(event.target.value)}
+          onBlur={savePlayerNickname}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              event.currentTarget.blur();
+            }
+          }}
+          autoComplete="nickname"
+          spellCheck={false}
+          placeholder={language === "ru" ? "ВВЕДИТЕ НИК" : "ENTER NICKNAME"}
+          aria-label={language === "ru" ? "Ник игрока" : "Player nickname"}
+          aria-invalid={Boolean(nicknameSaveError)}
+          title={nicknameSaveError || (language === "ru" ? "Введите ник. Изменения сохраняются автоматически при выходе из поля." : "Enter your nickname. Changes save automatically when you leave the field.")}
+        />
+
+        <div
+          className="player-kills-money-board"
+          role="group"
+          aria-label={language === "ru" ? "Цели текущего уровня" : "Current level goals"}
+        >
+          <img
+            className="player-kills-money-board-image"
+            src={getUiPng(
+              language === "en"
+                ? "player-kills-money-board-en.png"
+                : "player-kills-money-board.png"
+            )}
+            alt=""
+            aria-hidden="true"
+            draggable={false}
+          />
+          <span
+            className="player-kills-money-goal player-kills-money-goal-kills"
+            data-goal="kills"
+            aria-label={language === "ru" ? "Осталось убийств" : "Kills remaining"}
+          >
+            {Math.max(
+              0,
+              contractLevel * 2 - (Number(contractProgress.kills) || 0)
+            ).toLocaleString(language === "ru" ? "ru-RU" : "en-US")}
+          </span>
+          <span
+            className="player-kills-money-goal player-kills-money-goal-money"
+            data-goal="money"
+            aria-label={language === "ru" ? "Осталось чистой прибыли" : "Net profit remaining"}
+          >
+            {Math.max(
+              0,
+              contractLevel * 2000 - (
+                (Number(contractProgress.money) || 0) -
+                (Number(contractProgress.spent) || 0)
+              )
+            ).toLocaleString(language === "ru" ? "ru-RU" : "en-US")}
+          </span>
+        </div>
+
 <button
   type="button"
   className={`generate-button ${
@@ -2695,133 +3553,50 @@ await sleep(
                     })}
         </div>
 
-        <div
-          className="contract-side-board"
-          data-last-log-event={huntLogEvents.length ? huntLogEvents[huntLogEvents.length - 1].type : "none"}
-          role="group"
-          aria-label={
-            language === "ru" ? "Статистика охотника" : "Hunter statistics"
+        <PlayerStatBoard
+          slot={1}
+          nickname={getDisplayedPlayerNickname(1)}
+          stats={getDisplayedPlayerStats(1)}
+          lifetimeStats={getDisplayedPlayerLifetimeStats(1)}
+          showLifetime={currentPlayerSlot === 1 || !currentPlayerSlot}
+          editable={currentPlayerSlot === 1}
+          language={language}
+          drafts={currentPlayerSlot === 1 ? contractStatDrafts : { kills: "", money: "" }}
+          onDraftChange={updateContractStat}
+          onCommit={commitContractStat}
+          contractLevel={contractLevel}
+          activityEvent={
+            huntLogEvents.length
+              ? huntLogEvents[huntLogEvents.length - 1].type
+              : "none"
           }
-        >
-          <img
-            className="contract-side-board-image"
-            src={
-              language === "en"
-                ? new URL(
-                    "../Images/ui/contract-side-board-en.png",
-                    import.meta.url
-                  ).href
-                : new URL(
-                    "../Images/ui/contract-side-board.png",
-                    import.meta.url
-                  ).href
-            }
-            alt=""
-            aria-hidden="true"
-          />
+        />
 
-          <div className="contract-side-board-indicators">
-            <div className="contract-side-board-row contract-side-board-input-row">
-              <input
-                className="contract-side-board-value contract-side-board-input"
-                data-stat="kills"
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={12}
-                value={contractStatDrafts.kills}
-                onChange={(event) => updateContractStat("kills", event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    commitContractStat("kills");
-                    event.currentTarget.blur();
-                  }
-                }}
-                aria-label={language === "ru" ? "Количество убийств" : "Kill count"}
-                title={language === "ru" ? "Введите количество убийств" : "Enter kill count"}
-                autoComplete="off"
-                spellCheck={false}
-              />
-            </div>
+        <PlayerStatBoard
+          slot={2}
+          nickname={getDisplayedPlayerNickname(2)}
+          stats={getDisplayedPlayerStats(2)}
+          lifetimeStats={getDisplayedPlayerLifetimeStats(2)}
+          showLifetime={currentPlayerSlot === 2}
+          editable={currentPlayerSlot === 2}
+          language={language}
+          drafts={currentPlayerSlot === 2 ? contractStatDrafts : { kills: "", money: "" }}
+          onDraftChange={updateContractStat}
+          onCommit={commitContractStat}
+        />
 
-            <div className="contract-side-board-row">
-              <span
-                className="contract-side-board-value contract-side-board-readonly"
-                data-stat="spent"
-              >
-                {(Number(contractProgress.spent) || 0).toLocaleString(language === "ru" ? "ru-RU" : "en-US")}
-              </span>
-            </div>
-
-            <div className="contract-side-board-row contract-side-board-input-row">
-              <input
-                className="contract-side-board-value contract-side-board-input"
-                data-stat="money"
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={12}
-                value={contractStatDrafts.money}
-                onChange={(event) => updateContractStat("money", event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    commitContractStat("money");
-                    event.currentTarget.blur();
-                  }
-                }}
-                aria-label={language === "ru" ? "Заработано денег" : "Money earned"}
-                title={language === "ru" ? "Введите заработанную сумму" : "Enter money earned"}
-                autoComplete="off"
-                spellCheck={false}
-              />
-            </div>
-
-            <div className="contract-side-board-row">
-              <span
-                className="contract-side-board-value contract-side-board-readonly"
-                data-stat="net"
-              >
-                {(
-                  (Number(contractProgress.money) || 0) -
-                  (Number(contractProgress.spent) || 0)
-                ).toLocaleString(language === "ru" ? "ru-RU" : "en-US")}
-              </span>
-            </div>
-          </div>
-
-          <div
-            className="contract-goals-board"
-            role="group"
-            aria-label={
-              language === "ru" ? "Цели текущего уровня" : "Current level goals"
-            }
-          >
-            <img
-              className="contract-goals-board-image"
-              src={new URL(
-                "../Images/ui/contract-goals-board-vertical.png",
-                import.meta.url
-              ).href}
-              alt=""
-              aria-hidden="true"
-            />
-            <div className="contract-goals-board-values">
-              <span className="contract-goals-board-value contract-goals-board-kills" data-goal="kills">
-                {Math.max(0, contractLevel * 2 - contractProgress.kills).toLocaleString(language === "ru" ? "ru-RU" : "en-US")}
-              </span>
-              <span className="contract-goals-board-value contract-goals-board-money" data-goal="money">
-                {Math.max(
-                  0,
-                  contractLevel * 2000 -
-                    ((Number(contractProgress.money) || 0) -
-                      (Number(contractProgress.spent) || 0))
-                ).toLocaleString(language === "ru" ? "ru-RU" : "en-US")}
-              </span>
-            </div>
-          </div>
-        </div>
+        <PlayerStatBoard
+          slot={3}
+          nickname={getDisplayedPlayerNickname(3)}
+          stats={getDisplayedPlayerStats(3)}
+          lifetimeStats={getDisplayedPlayerLifetimeStats(3)}
+          showLifetime={currentPlayerSlot === 3}
+          editable={currentPlayerSlot === 3}
+          language={language}
+          drafts={currentPlayerSlot === 3 ? contractStatDrafts : { kills: "", money: "" }}
+          onDraftChange={updateContractStat}
+          onCommit={commitContractStat}
+        />
 
           <button
             type="button"
@@ -2829,12 +3604,12 @@ await sleep(
             onClick={() => {
               const confirmed = window.confirm(
                 language === "ru"
-                  ? "Обнулить все показатели контракта: убийства, использованные деньги и заработок? Текущий уровень сложности останется без изменений."
-                  : "Reset all contract counters: kills, money spent, and money earned? The current difficulty level will remain unchanged."
+                  ? "Полностью обнулить показатели игрока: текущий прогресс и накопительную статистику за все уровни? Уровень сложности останется без изменений."
+                  : "Completely reset this player's counters: current progress and lifetime totals across all levels? The difficulty level will remain unchanged."
               );
 
               if (confirmed) {
-                resetContractProgress();
+                resetAllContractStats();
               }
             }}
             disabled={generating}
@@ -2938,6 +3713,136 @@ stopOrder={row.stopOrder}
     />
   </div>
 )}
+
+<div className={`room-control-panel ${roomConnectionOpen && canOpenRoomConnection ? "is-connecting" : ""} ${isInRoom ? "is-connected" : "is-disconnected"}`}>
+  <div className="room-control-header">
+    <div className="room-control-title">
+      {language === "ru" ? "КОМНАТА" : "ROOM"}
+    </div>
+
+    {isInRoom && roomInfo?.code ? (
+      <>
+        <span className="room-control-code">{roomInfo.code}</span>
+        <button
+          type="button"
+          className="room-copy-icon-button"
+          onClick={() => navigator.clipboard?.writeText(roomInfo.code)}
+          title={language === "ru" ? "Скопировать ключ комнаты" : "Copy room key"}
+          aria-label={language === "ru" ? "Скопировать ключ комнаты" : "Copy room key"}
+        >
+          ⧉
+        </button>
+      </>
+    ) : (
+      <span className="room-control-status">
+        {language === "ru" ? "НЕ В КОМНАТЕ" : "NOT IN A ROOM"}
+      </span>
+    )}
+  </div>
+
+  <div className="room-team-list room-player-slots">
+    {[0, 1, 2].map((index) => {
+      const teamMember = roomPlayersForLocalView[index];
+      const displayedNickname = teamMember && Number(teamMember.slot) === Number(currentPlayerSlot)
+        ? (String(nicknameDraft || "").trim() || teamMember.nickname)
+        : teamMember?.nickname;
+
+      return (
+        <div className="room-player-slot" key={teamMember?.slot || `empty-${index}`}>
+          <span className="room-player-slot-title">
+            {language === "ru" ? `ИГРОК ${index + 1}` : `PLAYER ${index + 1}`}
+          </span>
+          {teamMember ? (
+            <span className="room-player">{displayedNickname}</span>
+          ) : (
+            <span
+              className="room-player room-player-empty"
+              aria-label={language === "ru" ? `Свободное место ${index + 1}` : `Open slot ${index + 1}`}
+            >
+              —
+            </span>
+          )}
+        </div>
+      );
+    })}
+  </div>
+
+  <div className="room-control-footer">
+    <div className="room-player-count">
+      <span className="room-player-count-icon" aria-hidden="true">♟</span>
+      {isInRoom && !roomInfo
+        ? (language === "ru" ? "СИНХРОНИЗАЦИЯ..." : "SYNCHRONIZING...")
+        : `${Math.min(roomPlayerCount, 3)} / 3 ${language === "ru" ? "игроков" : "players"}`}
+    </div>
+
+    {canOpenRoomConnection ? (
+      <button
+        type="button"
+        className="room-action-button room-connect-toggle"
+        onClick={() => {
+          setRoomConnectionOpen((open) => !open);
+          setRegistrationError("");
+        }}
+      >
+        {roomConnectionOpen
+          ? (language === "ru" ? "ОТМЕНА" : "CANCEL")
+          : (language === "ru" ? "ВОЙТИ В КОМНАТУ" : "JOIN ROOM")}
+      </button>
+    ) : (
+      <button type="button" className="room-action-button room-leave-button" onClick={leaveRoom}>
+        {language === "ru" ? "ВЫЙТИ ИЗ КОМНАТЫ" : "LEAVE ROOM"}
+      </button>
+    )}
+  </div>
+
+  {roomConnectionOpen && canOpenRoomConnection && (
+    <div className="room-connect-form">
+      <input
+        className="room-key-input"
+        type="text"
+        maxLength={2}
+        value={roomCodeDraft}
+        onChange={(event) => setRoomCodeDraft(event.target.value.toUpperCase())}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            joinRoom();
+          }
+        }}
+        autoComplete="off"
+        spellCheck={false}
+        placeholder="RB-XXXXX"
+        aria-label={language === "ru" ? "Ключ комнаты" : "Room key"}
+      />
+      <button
+        type="button"
+        className="room-form-join-button"
+        onClick={joinRoom}
+        disabled={!nicknameDraft.trim() || !roomCodeDraft.trim()}
+      >
+        {language === "ru" ? "ПОДКЛЮЧИТЬСЯ" : "JOIN"}
+      </button>
+      <button
+        type="button"
+        className="room-form-create-button"
+        onClick={createRoom}
+        disabled={!nicknameDraft.trim()}
+        title={language === "ru" ? "Создать новую комнату и получить ключ" : "Create a new room and get a key"}
+      >
+        {language === "ru" ? "СОЗДАТЬ КОМНАТУ" : "CREATE ROOM"}
+      </button>
+      {registrationError && (
+        <div className="room-registration-error">{registrationError}</div>
+      )}
+      {!nicknameDraft.trim() && (
+        <div className="room-registration-hint">
+          {language === "ru" ? "Сначала укажите ник над кнопкой генерации билда." : "Enter your nickname above the Generate Build button first."}
+        </div>
+      )}
+    </div>
+  )}
+</div>
+
     </main>
   );
 }

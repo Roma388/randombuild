@@ -1,0 +1,28 @@
+{
+  "rooms": {
+    "RB-VMB7E": {
+      "code": "RB-VMB7E",
+      "hostToken": "53e58e1c023b47545e54c3fbe1fff8b994d37fe80202482f",
+      "createdAt": 1795809693961,
+      "players": {
+        "1": {
+          "token": "53e58e1c023b47545e54c3fbe1fff8b994d37fe80202482f",
+          "nickname": "Gannik",
+          "team": 1,
+          "stats": {
+            "kills": 0,
+            "money": 0,
+            "spent": 0,
+            "lastBuildCost": 0
+          },
+          "lastSeen": 1795870797875,
+          "lifetimeStats": {
+            "kills": 0,
+            "money": 0,
+            "spent": 0
+          }
+        }
+      }
+    }
+  }
+}
