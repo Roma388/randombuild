@@ -2725,17 +2725,18 @@ useEffect(() => {
     }
 
     /*
-     * Измеряем фактическое расстояние между началами
-     * двух соседних карточек. Так учитываются реальные
-     * размеры карточек, рамки и межкарточный интервал.
-     * Это предотвращает накопление смещения при прокрутке.
+     * ВАЖНО: .app масштабируется внешним CSS transform: scale().
+     * getBoundingClientRect() возвращает уже уменьшенные координаты,
+     * а translate3d() задаёт смещение в исходных CSS-пикселях.
+     * Если использовать getBoundingClientRect(), масштаб применяется
+     * дважды и лента не доезжает до результата.
+     *
+     * offsetTop возвращает координаты исходной раскладки и включает
+     * межкарточный gap flex-контейнера. Поэтому расстояние остаётся
+     * правильным при любом масштабе всего игрового экрана.
      */
-    const firstTop =
-      cards[0].getBoundingClientRect().top;
-
-    const secondTop =
-      cards[1].getBoundingClientRect().top;
-
+    const firstTop = cards[0].offsetTop;
+    const secondTop = cards[1].offsetTop;
     const measuredStep = secondTop - firstTop;
 
     if (
