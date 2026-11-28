@@ -117,7 +117,7 @@ button {
   display: block;
 
   width: 100%;
-  height: clamp(118px, 8.4vw, 158px);
+  height: clamp(118px, 8.4cqw, 158px);
 
   margin: 0;
   padding: 0;
@@ -318,7 +318,7 @@ button {
 .roulette-label {
   position: relative;
   width: var(--roulette-card-width);
-  height: clamp(30px, 2.75vw, 84px);
+  height: clamp(30px, 2.75cqw, 84px);
   margin: 0 0 4px;
   padding: 5px 4px 7px;
   display: flex;
@@ -334,7 +334,7 @@ button {
 
   color: #d9c9a7;
   font-family: "PT Serif", Georgia, serif;
-  font-size: clamp(6px, 0.47vw, 12px);
+  font-size: clamp(6px, 0.47cqw, 12px);
   font-weight: 700;
   line-height: 1.12;
   letter-spacing: 0.25px;
@@ -380,7 +380,7 @@ button {
 
   color: #e4d0a8;
   font-family: "PT Serif", Georgia, serif;
-  font-size: clamp(9px, 0.68vw, 17px);
+  font-size: clamp(9px, 0.68cqw, 17px);
   font-weight: 700;
   line-height: 1.1;
   text-align: center;
@@ -426,7 +426,7 @@ button {
   flex: 0 0 var(--roulette-card-height);
   width: var(--roulette-card-width);
   height: var(--roulette-card-height);
-  padding: clamp(3px, 0.29vw, 8px);
+  padding: clamp(3px, 0.29cqw, 8px);
 
   border: 1px solid rgba(112, 100, 76, 0.48);
   background-color: #171610;
@@ -588,7 +588,7 @@ max-height: 80%;
     );
 }
 
-@media (max-width: 900px) {
+@media (max-width: 0px) {
   .header {
     min-height: 110px;
   }
@@ -598,7 +598,7 @@ max-height: 80%;
   }
 }
 
-@media (max-width: 620px) {
+@media (max-width: 0px) {
   .header {
     min-height: 100px;
     height: 100px;
@@ -721,7 +721,7 @@ height: 74.2%;
 
   color: #e8dcc2;
   font-family: "PT Serif", Georgia, serif;
-  font-size: clamp(15px, 1.2vw, 24px);
+  font-size: clamp(15px, 1.2cqw, 24px);
   font-weight: 700;
   letter-spacing: 1px;
 
@@ -735,7 +735,7 @@ height: 74.2%;
   filter: brightness(1.25);
 }
 
-@media (max-width: 620px) {
+@media (max-width: 0px) {
   .language-toggle {
     left: 64%;
     top: 28%;
@@ -774,7 +774,7 @@ height: 74.2%;
 
   color: #d9c9a7;
   font-family: "PT Serif", Georgia, serif;
-  font-size: clamp(9px, 0.65vw, 15px);
+  font-size: clamp(9px, 0.65cqw, 15px);
   font-weight: 700;
   letter-spacing: 1.5px;
 
@@ -984,7 +984,7 @@ z-index: 3;
   position: relative;
   flex: 0 1 auto;
 
-  width: min(500px, calc(100vw - 24px));
+  width: min(500px, calc(100cqw - 24px));
   aspect-ratio: 1487 / 1058;
 
   margin: 0;
@@ -1043,7 +1043,7 @@ z-index: 3;
   color: #f0dfbd;
   caret-color: #f0dfbd;
   font-family: "PT Serif", Georgia, serif;
-  font-size: clamp(12px, 2.5vw, 18px);
+  font-size: clamp(12px, 2.5cqw, 18px);
   font-weight: 700;
   letter-spacing: 3px;
   text-align: center;
@@ -1122,7 +1122,7 @@ z-index: 3;
 
   color: #e39a7b;
   font-family: "PT Serif", Georgia, serif;
-  font-size: clamp(9px, 2vw, 13px);
+  font-size: clamp(9px, 2cqw, 13px);
   line-height: 1.25;
   text-align: center;
   text-shadow: 0 1px 3px #000;
@@ -1145,20 +1145,20 @@ z-index: 3;
   background: rgba(8, 7, 5, 0.94);
 
   font-family: "PT Serif", Georgia, serif;
-  font-size: clamp(10px, 2.2vw, 16px);
+  font-size: clamp(10px, 2.2cqw, 16px);
   font-weight: 700;
   letter-spacing: 1.5px;
   text-align: center;
   text-shadow: 0 1px 3px #000;
 }
 
-@media (max-width: 520px) {
+@media (max-width: 0px) {
   .auth-overlay {
     padding: 8px;
   }
 
   .auth-card {
-    width: min(500px, calc(100vw - 16px));
+    width: min(500px, calc(100cqw - 16px));
   }
 
   .auth-input {
@@ -1405,7 +1405,7 @@ z-index: 3;
   color: #f4dfb5;
 }
 
-@media (max-width: 620px) {
+@media (max-width: 0px) {
 
   .guide-overlay {
     align-items: flex-start;
@@ -1531,7 +1531,7 @@ body::before {
   color: #f0dfbd !important;
   caret-color: #f0dfbd;
   font-family: "PT Serif", Georgia, serif !important;
-  font-size: clamp(17px, 1.45vw, 25px) !important;
+  font-size: clamp(17px, 1.45cqw, 25px) !important;
   font-weight: 700 !important;
   line-height: 1 !important;
   text-align: center !important;
@@ -1614,8 +1614,8 @@ body::before {
 .difficulty-slider-wrap input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: clamp(22px, 2.05vw, 35px);
-  height: clamp(22px, 2.05vw, 35px);
+  width: clamp(22px, 2.05cqw, 35px);
+  height: clamp(22px, 2.05cqw, 35px);
   margin-top: 0;
   transform: rotate(45deg);
   border: 2px solid #e7c58a;
@@ -1641,8 +1641,8 @@ body::before {
 }
 
 .difficulty-slider-wrap input[type="range"]::-moz-range-thumb {
-  width: clamp(22px, 2.05vw, 35px);
-  height: clamp(22px, 2.05vw, 35px);
+  width: clamp(22px, 2.05cqw, 35px);
+  height: clamp(22px, 2.05cqw, 35px);
   transform: rotate(45deg);
   border: 2px solid #e7c58a;
   border-radius: 1px;
@@ -1897,7 +1897,7 @@ body::before {
   box-shadow: none !important;
   color: #e9d5ad !important;
   font-family: "PT Serif", Georgia, serif !important;
-  font-size: clamp(7px, 0.68vw, 14px) !important;
+  font-size: clamp(7px, 0.68cqw, 14px) !important;
   font-weight: 700 !important;
   line-height: 1.05 !important;
   text-align: center !important;
@@ -1922,7 +1922,7 @@ body::before {
   z-index: 100001 !important;
 }
 
-@media (max-width: 1120px) {
+@media (max-width: 0px) {
   .app {
     width: 1120px;
     min-width: 1120px;
@@ -1932,7 +1932,7 @@ body::before {
   }
 }
 
-@media (max-height: 650px) {
+@media (max-height: 0px) {
   .app {
     min-height: 650px;
     height: 100vh;
@@ -1953,8 +1953,8 @@ body::before {
   position: absolute;
   left: 8.5%;
   top: 74%;
-  width: clamp(22px, 2.05vw, 35px);
-  height: clamp(22px, 2.05vw, 35px);
+  width: clamp(22px, 2.05cqw, 35px);
+  height: clamp(22px, 2.05cqw, 35px);
   transform: translate(-50%, -50%) rotate(45deg);
   border: 1px solid rgba(139, 111, 76, 0.9);
   background: linear-gradient(145deg, #18130f, #090806);
@@ -1975,7 +1975,7 @@ body::before {
   padding: 0 2px 5% !important;
   color: #ead8b7 !important;
   font-family: "PT Serif", Georgia, serif !important;
-  font-size: clamp(6px, 0.66vw, 12px) !important;
+  font-size: clamp(6px, 0.66cqw, 12px) !important;
   font-weight: 700 !important;
   line-height: 1.02 !important;
   letter-spacing: 0.15px !important;
@@ -2005,7 +2005,7 @@ body::before {
   background: rgba(9, 7, 5, 0.94);
   color: #e6c992;
   font-family: "PT Serif", Georgia, serif;
-  font-size: clamp(10px, 0.9vw, 16px);
+  font-size: clamp(10px, 0.9cqw, 16px);
   font-weight: 700;
   letter-spacing: 1.4px;
   text-shadow: 0 1px 3px #000;
@@ -2025,7 +2025,7 @@ body::before {
   background: rgba(9, 7, 5, 0.94);
   color: #e6c992;
   font-family: "PT Serif", Georgia, serif;
-  font-size: clamp(8px, 0.8vw, 14px);
+  font-size: clamp(8px, 0.8cqw, 14px);
   font-weight: 700;
   letter-spacing: 0.6px;
   text-shadow: 0 1px 3px #000;
@@ -2044,7 +2044,7 @@ body::before {
   background: rgba(207, 176, 128, 0.96);
   color: #21150d;
   font-family: "PT Serif", Georgia, serif;
-  font-size: clamp(10px, 1.05vw, 18px);
+  font-size: clamp(10px, 1.05cqw, 18px);
   font-weight: 700;
   letter-spacing: 0.4px;
   text-shadow: 0 1px 0 rgba(255, 231, 192, 0.65);
@@ -2111,7 +2111,7 @@ body::before {
   color: #f2dfba !important;
   caret-color: #f2dfba !important;
   font-family: "PT Serif", Georgia, serif !important;
-  font-size: clamp(17px, 1.45vw, 25px) !important;
+  font-size: clamp(17px, 1.45cqw, 25px) !important;
   font-weight: 700 !important;
   line-height: 1 !important;
   text-align: center !important;
@@ -2209,8 +2209,8 @@ body::before {
 .difficulty-option {
   position: absolute !important;
   top: 50% !important;
-  width: 1.85vw !important;
-  height: 1.85vw !important;
+  width: 1.85cqw !important;
+  height: 1.85cqw !important;
   min-width: 0 !important;
   min-height: 0 !important;
   margin: 0 !important;
@@ -2241,7 +2241,7 @@ body::before {
   transform: rotate(-45deg) !important;
   color: inherit !important;
   font-family: "PT Serif", Georgia, serif !important;
-  font-size: clamp(14px, 1.1vw, 20px) !important;
+  font-size: clamp(14px, 1.1cqw, 20px) !important;
   font-weight: 700 !important;
   line-height: 1 !important;
   text-shadow: 0 1px 3px #000 !important;
@@ -2285,7 +2285,7 @@ body::before {
   background: transparent !important;
   color: #ead8b7 !important;
   font-family: "PT Serif", Georgia, serif !important;
-  font-size: clamp(12px, 1.02vw, 19px) !important;
+  font-size: clamp(12px, 1.02cqw, 19px) !important;
   font-weight: 700 !important;
   letter-spacing: 0.04em !important;
   line-height: 1 !important;
@@ -2425,7 +2425,7 @@ body::before {
   box-shadow: none !important;
   color: #e9d5ad !important;
   font-family: "PT Serif", Georgia, serif !important;
-  font-size: clamp(7px, 0.64vw, 13px) !important;
+  font-size: clamp(7px, 0.64cqw, 13px) !important;
   font-weight: 700 !important;
   line-height: 1.02 !important;
   text-align: center !important;
@@ -2441,7 +2441,7 @@ body::before {
   animation: roulette-text-fade 0.55s ease-out both !important;
 }
 
-@media (max-width: 1120px) {
+@media (max-width: 0px) {
   .app {
     width: 1120px;
     min-width: 1120px;
@@ -2507,7 +2507,7 @@ body::before {
   color: #f2dfba !important;
   caret-color: #f2dfba !important;
   font-family: "PT Serif", Georgia, serif !important;
-  font-size: clamp(17px, 1.45vw, 25px) !important;
+  font-size: clamp(17px, 1.45cqw, 25px) !important;
   font-weight: 700 !important;
   line-height: 1 !important;
   text-align: center !important;
@@ -2659,7 +2659,7 @@ body::before {
   transform: none !important;
   color: #f0dfbd !important;
   font-family: "PT Serif", Georgia, serif !important;
-  font-size: clamp(14px, 1.10vw, 20px) !important;
+  font-size: clamp(14px, 1.10cqw, 20px) !important;
   font-weight: 700 !important;
   line-height: 1 !important;
   text-align: center !important;
@@ -2968,7 +2968,7 @@ body::before {
   box-shadow: none !important;
   color: #ead8b7 !important;
   font-family: "PT Serif", Georgia, serif !important;
-  font-size: clamp(12px, 1.0vw, 18px) !important;
+  font-size: clamp(12px, 1.0cqw, 18px) !important;
   font-weight: 700 !important;
   line-height: 1 !important;
   letter-spacing: 0.03em !important;
@@ -3152,7 +3152,7 @@ body::before {
   box-shadow: none !important;
   color: #ead8b7 !important;
   font-family: "PT Serif", Georgia, serif !important;
-  font-size: clamp(14px, 1.02vw, 19px) !important;
+  font-size: clamp(14px, 1.02cqw, 19px) !important;
   font-weight: 700 !important;
   line-height: 1 !important;
   letter-spacing: 0.035em !important;
@@ -3407,7 +3407,7 @@ body::before {
   top: 6.7% !important;
   right: 1.9% !important;
 
-  width: clamp(46px, 4.9vw, 82px) !important;
+  width: clamp(46px, 4.9cqw, 82px) !important;
   height: auto !important;
   aspect-ratio: 1269 / 1240 !important;
 
@@ -3479,7 +3479,7 @@ body::before {
   outline: none !important;
 }
 
-@media (max-width: 620px) {
+@media (max-width: 0px) {
   .guide-button {
     top: 6.7% !important;
     right: 1.9% !important;
@@ -4464,8 +4464,8 @@ height: 42% !important;
 
 .contract-progress {
   position: absolute !important;
-  left: clamp(22px, 2.2vw, 42px) !important;
-  bottom: clamp(18px, 2.5vh, 30px) !important;
+  left: clamp(22px, 2.2cqw, 42px) !important;
+  bottom: clamp(18px, 2.5cqh, 30px) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: flex-start !important;
@@ -4490,9 +4490,9 @@ height: 42% !important;
 
 .contract-progress-step {
   position: relative !important;
-  flex: 0 0 clamp(45px, 3.6vw, 69px) !important;
-width: clamp(45px, 3.6vw, 69px) !important;
-height: clamp(45px, 3.6vw, 69px) !important;
+  flex: 0 0 clamp(45px, 3.6cqw, 69px) !important;
+width: clamp(45px, 3.6cqw, 69px) !important;
+height: clamp(45px, 3.6cqw, 69px) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -4523,7 +4523,7 @@ height: clamp(45px, 3.6vw, 69px) !important;
   padding: 0 !important;
   color: #d8c7a7 !important;
   font-family: "PT Serif", Georgia, serif !important;
-  font-size: clamp(9px, 0.68vw, 13px) !important;
+  font-size: clamp(9px, 0.68cqw, 13px) !important;
   font-weight: 700 !important;
   line-height: 1 !important;
   text-align: center !important;
@@ -4560,7 +4560,7 @@ height: clamp(45px, 3.6vw, 69px) !important;
     0 1px 3px #000 !important;
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 0px) {
   .contract-progress {
     left: 20px !important;
     bottom: 18px !important;
@@ -4585,13 +4585,13 @@ height: clamp(45px, 3.6vw, 69px) !important;
 
 .contract-mode-switch {
   position: absolute !important;
-  left: clamp(22px, 2.2vw, 42px) !important;
+  left: clamp(22px, 2.2cqw, 42px) !important;
   bottom: calc(
-    clamp(18px, 2.5vh, 30px) +
-    clamp(45px, 3.6vw, 69px) +
+    clamp(18px, 2.5cqh, 30px) +
+    clamp(45px, 3.6cqw, 69px) +
     -30px
   ) !important;
-  width: clamp(210px, 16vw, 300px) !important;
+  width: clamp(210px, 16cqw, 300px) !important;
   height: auto !important;
   aspect-ratio: 2048 / 758 !important;
   display: block !important;
@@ -4687,11 +4687,11 @@ height: clamp(45px, 3.6vw, 69px) !important;
   outline-offset: 2px !important;
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 0px) {
   .contract-mode-switch {
     left: 20px !important;
     bottom: calc(18px + 22px + 8px) !important;
-    width: clamp(190px, 18vw, 245px) !important;
+    width: clamp(190px, 18cqw, 245px) !important;
   }
 }
 
@@ -4725,7 +4725,7 @@ height: clamp(45px, 3.6vw, 69px) !important;
   position: absolute !important;
   left: calc(100% + 0px) !important;
   top: 10% !important;
-  width: clamp(180px, 18vw, 320px) !important;
+  width: clamp(180px, 18cqw, 320px) !important;
   height: auto !important;
   aspect-ratio: 2 / 1 !important;
   display: block !important;
@@ -4816,10 +4816,10 @@ height: clamp(45px, 3.6vw, 69px) !important;
 }
 
 
-@media (max-width: 1280px) {
+@media (max-width: 0px) {
   .contract-side-board {
     left: calc(100% + 8px) !important;
-    width: clamp(170px, 18vw, 230px) !important;
+    width: clamp(170px, 18cqw, 230px) !important;
   }
 }
 
@@ -4948,7 +4948,7 @@ body {
 
 
 /* Small-height media rules from earlier styles must not reintroduce a crop. */
-@media (max-height: 650px) {
+@media (max-height: 0px) {
   .app {
     height: min(100vh, 56.2799vw) !important;
     min-height: 0 !important;
@@ -5271,7 +5271,7 @@ body {
   line-height: 0.8 !important;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 0px) {
   .contract-progress > .contract-reset-button {
     left: calc(100% + 22.6cqw + 7px) !important;
     width: clamp(62px, 6.3cqw, 82px) !important;
@@ -5346,7 +5346,7 @@ body {
   cursor: not-allowed !important;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 0px) {
   .contract-progress > .contract-reset-button {
     left: calc(100% + 22.6cqw + 7px) !important;
     width: 46px !important;
@@ -5394,26 +5394,26 @@ body {
 }
 
 .contract-progress .contract-side-board-player-2 {
-  left: calc(100% + clamp(180px, 18vw, 320px) + 22.4% + 14px) !important;
+  left: calc(100% + clamp(180px, 18cqw, 320px) + 22.4% + 14px) !important;
 }
 
 .contract-progress .contract-side-board-player-3 {
-  left: calc(100% + clamp(360px, 36vw, 640px) + 44.8% + 36px) !important;
+  left: calc(100% + clamp(360px, 36cqw, 640px) + 44.8% + 36px) !important;
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 0px) {
   .contract-progress .contract-side-board-player-2 {
-    left: calc(100% + clamp(170px, 18vw, 230px) + 22.4% + 10px) !important;
+    left: calc(100% + clamp(170px, 18cqw, 230px) + 22.4% + 10px) !important;
   }
 
   .contract-progress .contract-side-board-player-3 {
-    left: calc(100% + clamp(340px, 36vw, 460px) + 44.8% + 20px) !important;
+    left: calc(100% + clamp(340px, 36cqw, 460px) + 44.8% + 20px) !important;
   }
 }
 
 /* На небольших экранах три доски остаются в нижней правой области,
    но уменьшаются вместе с существующей адаптивной доской. */
-@media (max-width: 900px) {
+@media (max-width: 0px) {
   .contract-progress .contract-side-board-player-2 {
     left: calc(100% + 18cqw + 22.4% + 8px) !important;
   }
@@ -5452,7 +5452,7 @@ body {
 
 .player-registration-panel {
   position: relative !important;
-  width: min(420px, 90vw) !important;
+  width: min(420px, 90cqw) !important;
   padding: 30px 34px 34px !important;
   border: 1px solid rgba(169, 138, 88, 0.75) !important;
   background:
@@ -5471,7 +5471,7 @@ body {
 .player-registration-title {
   color: #e1c48b !important;
   font-family: "PT Serif", Georgia, serif !important;
-  font-size: clamp(22px, 3vw, 32px) !important;
+  font-size: clamp(22px, 3cqw, 32px) !important;
   font-weight: 700 !important;
   letter-spacing: 0.12em !important;
   text-shadow:
@@ -5563,7 +5563,7 @@ body {
    RANDOMBUILD — ROOM CONNECTION / SINGLE TEAM, THREE PLAYERS
 ========================================================= */
 .room-registration-panel {
-  width: min(440px, 86vw) !important;
+  width: min(440px, 86cqw) !important;
 }
 
 .room-registration-actions {
@@ -5605,8 +5605,8 @@ body {
   position: absolute !important;
   top: 18px !important;
   right: 522px !important;
-  width: clamp(90px, 17vw, 250px) !important;
-  max-height: min(62vh, 100px) !important;
+  width: clamp(90px, 17cqw, 250px) !important;
+  max-height: min(62cqh, 100px) !important;
   padding: 11px 13px 12px !important;
   box-sizing: border-box !important;
   background: linear-gradient(180deg, rgba(27, 20, 14, 0.96), rgba(8, 7, 5, 0.96)) !important;
@@ -5623,7 +5623,7 @@ body {
   justify-content: space-between !important;
   gap: 8px !important;
   color: #d6b77f !important;
-  font-size: clamp(10px, 0.85vw, 14px) !important;
+  font-size: clamp(10px, 0.85cqw, 14px) !important;
   font-weight: 700 !important;
   letter-spacing: 0.6px !important;
 }
@@ -5644,7 +5644,7 @@ body {
   background: linear-gradient(180deg, #493622, #1a120b) !important;
   color: #e7d1a8 !important;
   font-family: "PT Serif", Georgia, serif !important;
-  font-size: clamp(8px, 0.68vw, 11px) !important;
+  font-size: clamp(8px, 0.68cqw, 11px) !important;
   font-weight: 700 !important;
   cursor: pointer !important;
 }
@@ -5657,7 +5657,7 @@ body {
 .room-player-count {
   margin: 9px 0 6px !important;
   color: #9e8d70 !important;
-  font-size: clamp(8px, 0.62vw, 10px) !important;
+  font-size: clamp(8px, 0.62cqw, 10px) !important;
   text-align: center !important;
 }
 
@@ -5676,14 +5676,14 @@ body {
   display: block !important;
   margin-bottom: 3px !important;
   color: #a98b5c !important;
-  font-size: clamp(7px, 0.58vw, 10px) !important;
+  font-size: clamp(7px, 0.58cqw, 10px) !important;
   letter-spacing: 0.7px !important;
 }
 
 .room-player {
   display: block !important;
   color: #d9c7a5 !important;
-  font-size: clamp(8px, 0.67vw, 11px) !important;
+  font-size: clamp(8px, 0.67cqw, 11px) !important;
   line-height: 1.35 !important;
   white-space: nowrap !important;
   overflow: hidden !important;
@@ -5696,12 +5696,12 @@ body {
   color: #cba28c !important;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 0px) {
   .room-control-panel {
     top: 10px !important;
     right: 10px !important;
     width: 180px !important;
-    max-height: 48vh !important;
+    max-height: 48cqh !important;
   }
 }
 
@@ -6026,7 +6026,7 @@ body {
 
 .room-registration-hint { color: #a89574 !important; }
 
-@media (max-width: 1120px) {
+@media (max-width: 0px) {
   .room-control-panel {
     --room-panel-left: 54cqw;
     --room-panel-top: 17cqh;
@@ -6235,7 +6235,7 @@ body {
   overflow-wrap: anywhere !important;
 }
 
-@media (max-width: 1120px) {
+@media (max-width: 0px) {
   .room-control-panel:not(.is-connecting) {
     grid-template-rows:
       minmax(17px, 0.82fr)
@@ -6672,7 +6672,7 @@ body {
   overflow-wrap: anywhere !important;
 }
 
-@media (max-width: 1120px) {
+@media (max-width: 0px) {
   #root .app .room-control-panel {
     --room-panel-height: calc(var(--room-panel-width) * 0.4510) !important;
     height: var(--room-panel-height) !important;
@@ -7124,4 +7124,110 @@ body {
   text-shadow:
     0 1px 2px rgba(0, 0, 0, 0.98),
     0 0 5px rgba(0, 0, 0, 0.9) !important;
+}
+
+
+/* =========================================================
+   RANDOMBUILD — ONE UNIFIED RESPONSIVE DESIGN CANVAS
+   Logical design size: 1672 x 941.
+   The whole application is transformed uniformly to fit the available viewport.
+   Keep all child geometry in percentages, cqw/cqh, or design-pixel values;
+   do not add viewport-based sizing to individual descendants.
+========================================================= */
+
+html,
+body,
+#root {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+html,
+body {
+  background: #080706 !important;
+}
+
+body {
+  position: relative !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+#root {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+}
+
+#root > .app {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  flex: 0 0 1672px !important;
+  width: 1672px !important;
+  min-width: 1672px !important;
+  max-width: 1672px !important;
+  height: 941px !important;
+  min-height: 941px !important;
+  max-height: 941px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  aspect-ratio: 1672 / 941 !important;
+  container-type: size !important;
+  container-name: rb-screen-canvas !important;
+  transform: translate(-50%, -50%) scale(min(calc(100vw / 1672px), calc(100vh / 941px))) !important;
+  transform-origin: center center !important;
+  will-change: transform !important;
+  background-position: center center !important;
+  background-size: 100% 100% !important;
+  background-repeat: no-repeat !important;
+}
+
+/* A few older overlays used viewport units. Keep their sizes on the same
+   logical canvas too; the ancestor transform then scales them with everything else. */
+#root > .app .player-registration-panel {
+  width: min(420px, 90cqw) !important;
+}
+
+#root > .app .player-registration-title {
+  font-size: clamp(22px, 3cqw, 32px) !important;
+}
+
+#root > .app .room-registration-panel {
+  width: min(440px, 86cqw) !important;
+}
+
+#root > .app .room-control-title {
+  font-size: clamp(10px, 0.85cqw, 14px) !important;
+}
+
+#root > .app .room-copy-button,
+#root > .app .room-leave-button {
+  font-size: clamp(8px, 0.68cqw, 11px) !important;
+}
+
+#root > .app .room-player-count {
+  font-size: clamp(8px, 0.62cqw, 10px) !important;
+}
+
+/* =========================================================
+   ROOM CONNECTION — SHOW DISCONNECTED STATUS IN FULL
+   The room key appears only after a room is successfully created/joined.
+========================================================= */
+#root .app .room-control-panel .room-control-status {
+  left: 65.5% !important;
+  width: 31% !important;
+  font-size: clamp(5px, 2.35cqw, 8px) !important;
+  letter-spacing: 0 !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
 }

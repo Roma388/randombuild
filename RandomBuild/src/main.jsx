@@ -1973,6 +1973,8 @@ const statsSyncPendingRef = React.useRef(0);
 
 const currentPlayerSlot = playerSession?.slot || 0;
 const currentPlayerNickname = playerSession?.nickname || "";
+// Room actions use the visible nickname draft, falling back to the saved session nickname.
+const effectiveRoomNickname = String(nicknameDraft || playerSession?.nickname || "").trim().slice(0, 24);
 const roomPlayers = roomInfo?.players || {};
 const sortedRoomPlayers = Object.values(roomPlayers)
   .filter(Boolean)
@@ -2286,7 +2288,7 @@ useEffect(() => {
 }, [playerSession?.token]);
 
 async function createRoom() {
-  const nickname = String(nicknameDraft || playerSession?.nickname || "").trim().slice(0, 24);
+  const nickname = effectiveRoomNickname;
   const previousToken = String(playerSession?.token || "").trim();
   if (!nickname) {
     setRegistrationError(language === "ru" ? "Введите ник." : "Enter your nickname.");
@@ -2345,7 +2347,7 @@ async function createRoom() {
 }
 
 async function joinRoom() {
-  const nickname = String(nicknameDraft || playerSession?.nickname || "").trim().slice(0, 24);
+  const nickname = effectiveRoomNickname;
   const roomCode = String(roomCodeDraft || "").trim().toUpperCase();
   const previousToken = String(playerSession?.token || "").trim();
   const previousRoomCode = String(playerSession?.roomCode || "").trim().toUpperCase();
@@ -3800,9 +3802,9 @@ stopOrder={row.stopOrder}
       <input
         className="room-key-input"
         type="text"
-        maxLength={2}
+        maxLength={8}
         value={roomCodeDraft}
-        onChange={(event) => setRoomCodeDraft(event.target.value.toUpperCase())}
+        onChange={(event) => setRoomCodeDraft(event.target.value.toUpperCase().replace(/\s+/g, "").slice(0, 8))}
         onKeyDown={(event) => {
           if (event.key === "Enter") {
             event.preventDefault();
@@ -3818,7 +3820,7 @@ stopOrder={row.stopOrder}
         type="button"
         className="room-form-join-button"
         onClick={joinRoom}
-        disabled={!nicknameDraft.trim() || !roomCodeDraft.trim()}
+        disabled={!effectiveRoomNickname || !roomCodeDraft.trim()}
       >
         {language === "ru" ? "ПОДКЛЮЧИТЬСЯ" : "JOIN"}
       </button>
@@ -3826,7 +3828,7 @@ stopOrder={row.stopOrder}
         type="button"
         className="room-form-create-button"
         onClick={createRoom}
-        disabled={!nicknameDraft.trim()}
+        disabled={!effectiveRoomNickname}
         title={language === "ru" ? "Создать новую комнату и получить ключ" : "Create a new room and get a key"}
       >
         {language === "ru" ? "СОЗДАТЬ КОМНАТУ" : "CREATE ROOM"}
@@ -3834,7 +3836,7 @@ stopOrder={row.stopOrder}
       {registrationError && (
         <div className="room-registration-error">{registrationError}</div>
       )}
-      {!nicknameDraft.trim() && (
+      {!effectiveRoomNickname && (
         <div className="room-registration-hint">
           {language === "ru" ? "Сначала укажите ник над кнопкой генерации билда." : "Enter your nickname above the Generate Build button first."}
         </div>

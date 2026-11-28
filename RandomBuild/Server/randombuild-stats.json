@@ -1,12 +1,12 @@
 {
   "rooms": {
-    "RB-VMB7E": {
-      "code": "RB-VMB7E",
-      "hostToken": "53e58e1c023b47545e54c3fbe1fff8b994d37fe80202482f",
-      "createdAt": 1795809693961,
+    "RB-KXXGQ": {
+      "code": "RB-KXXGQ",
+      "hostToken": "12c853dea63e1b7b045aeafe26e2d0e46233eac6d74486ef",
+      "createdAt": 1795872850530,
       "players": {
         "1": {
-          "token": "53e58e1c023b47545e54c3fbe1fff8b994d37fe80202482f",
+          "token": "12c853dea63e1b7b045aeafe26e2d0e46233eac6d74486ef",
           "nickname": "Gannik",
           "team": 1,
           "stats": {
@@ -15,12 +15,36 @@
             "spent": 0,
             "lastBuildCost": 0
           },
-          "lastSeen": 1795870797875,
           "lifetimeStats": {
             "kills": 0,
             "money": 0,
             "spent": 0
-          }
+          },
+          "lastSeen": 1795872944137
+        }
+      }
+    },
+    "RB-FNT4X": {
+      "code": "RB-FNT4X",
+      "hostToken": "4d1cf688bfdb9a10ff8f680caac9a8d06271d4c48eae5976",
+      "createdAt": 1795872890018,
+      "players": {
+        "1": {
+          "token": "4d1cf688bfdb9a10ff8f680caac9a8d06271d4c48eae5976",
+          "nickname": "Gannik",
+          "team": 1,
+          "stats": {
+            "kills": 0,
+            "money": 0,
+            "spent": 0,
+            "lastBuildCost": 0
+          },
+          "lifetimeStats": {
+            "kills": 0,
+            "money": 0,
+            "spent": 0
+          },
+          "lastSeen": 1795872944144
         }
       }
     }
